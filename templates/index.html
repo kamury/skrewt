@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skew-T Log-P Diagram (D3.js)</title>
+    <script src="{{ url_for('static', filename='d3.v7.min.js')}}"></script>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        svg { background: #f5f5f5; }
+        /*.grid-line { stroke: #ddd; stroke-width: 0.5; }*/
+        .pressureLines { stroke: #555; stroke-dasharray: 2,2; }
+        .isoterm { stroke: #a96d42; stroke-width: 0.5px; fill: none; }
+        .dry-adiabat { stroke: #c21134; stroke-width: 0.5px; fill: none; }  /* Коричневый */
+        .moist-adiabat { stroke: #1e90ff; stroke-width: 0.5px; fill: none; } /* Синий */
+        .mixing-ratio { stroke: #32cd32; }  /* Зелёный */
+
+        .gridline, .tempzero {
+            stroke: #805f48;
+            stroke-width: 0.5px;
+            fill: none;
+        }
+        .tempzero { stroke: #aaa; stroke-width: 1.25px; }
+
+        .highScale {
+            padding: 10px;
+            font-size: 12px;
+            background-color: #aaa; 
+            display: inline;
+        }
+
+        .highScale:hover {
+            border-top:#df823f solid 5px;
+        }
+
+        .highScaleSel {
+            border-top:#df823f solid 5px;
+            padding: 10px;
+            font-size: 12px;
+            background-color: #5e5e5e; 
+            display: inline;
+        }
+
+        #windbarbs{
+            width: 100%;
+            height: 100%;
+            background: black;
+        }
+  
+  
+        @media screen and (min-width: 992px) {
+            #barbs {
+                width: 8%;
+                height: 80vh;
+                margin-top: 0px;
+        }
+
+        table {
+            width:100%;
+            height:100%;
+            font-size: 1.1em;
+        }
+
+        tr, td {
+            font-family: "Helvetica";
+            border: 1px solid black;
+            background: #1A1A1A;
+            text-align: right;
+            padding-right: 10px;
+            color: white;
+        }
+
+        th {
+            padding-right: 10px;
+            color: #cccccc;
+        }
+  }
+  
+
+    </style>
+</head>
+<body>
+    <div>
+        <div id="s3500" class="highScale"><a href="/?scale=3500">3500 m</a></div>
+        <div id="s6000" class="highScale"><a href="/?scale=6000">6000 m</a></div>
+        <div id="s12000" class="highScale"><a href="/?scale=12000">12000 m</a></div>
+    </div>
+    <div id="skewt-container" style="display: inline-block;"></div>
+    <script type="module" src="{{ url_for('static', filename='skrew-t.js')}}"></script>
+
+    <div id="wind-container" style="display: inline-block"></div>
+
+    <div>
+        <input type="range" id="timeRange" />
+    </div>
+
+
+
+    <!--<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Непростой график D3.js</title>
+    <script src="{{ url_for('static', filename='d3.v7.min.js')}}"></script>
+    <style>
+        .line {
+            fill: none;
+            stroke: steelblue;
+            stroke-width: 2px;
+        }
+    </style>
+</head>
+<body>
+    <svg id="chart"></svg>
+    <script src="{{ url_for('static', filename='script-deep.js')}}"></script>-->
+</body>
+</html>

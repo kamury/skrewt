@@ -1,0 +1,1179 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.04558,
+                    57.89885,
+                    290.0
+                ]
+            },
+            "properties": {
+                "time": 1749166228,
+                "gpheight": 290.0,
+                "temp": 291.55,
+                "dewpoint": 284.05,
+                "pressure": 976.2,
+                "wind_u": 3.07,
+                "wind_v": 6.29,
+                "flags": 2048
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.04958,
+                    57.90174,
+                    500.0
+                ]
+            },
+            "properties": {
+                "time": 1749166265,
+                "gpheight": 500.0,
+                "temp": 291.85,
+                "dewpoint": 282.45,
+                "pressure": 952.9,
+                "wind_u": 8.63,
+                "wind_v": 8.34
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.05016,
+                    57.90207,
+                    510.0
+                ]
+            },
+            "properties": {
+                "time": 1749166268,
+                "gpheight": 510.0,
+                "temp": 291.95,
+                "dewpoint": 282.45,
+                "pressure": 951.8,
+                "wind_u": 9.51,
+                "wind_v": 8.87,
+                "flags": 2048
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.0519,
+                    57.90263,
+                    570.0
+                ]
+            },
+            "properties": {
+                "time": 1749166278,
+                "gpheight": 570.0,
+                "temp": 291.65,
+                "dewpoint": 281.85,
+                "pressure": 945.1,
+                "wind_u": 9.66,
+                "wind_v": 8.7,
+                "flags": 8192
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.05661,
+                    57.90502,
+                    753.0
+                ]
+            },
+            "properties": {
+                "time": 1749166308,
+                "gpheight": 753.0,
+                "temp": 290.25,
+                "dewpoint": 280.55,
+                "pressure": 925.0,
+                "wind_u": 9.06,
+                "wind_v": 7.87,
+                "flags": 65536
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.06353,
+                    57.90809,
+                    1000.0
+                ]
+            },
+            "properties": {
+                "time": 1749166354,
+                "gpheight": 1000.0,
+                "temp": 287.95,
+                "dewpoint": 279.45,
+                "pressure": 898.6,
+                "wind_u": 8.04,
+                "wind_v": 7.5
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.07523,
+                    57.91374,
+                    1500.0
+                ]
+            },
+            "properties": {
+                "time": 1749166440,
+                "gpheight": 1500.0,
+                "temp": 283.55,
+                "dewpoint": 277.65,
+                "pressure": 846.7,
+                "wind_u": 8.67,
+                "wind_v": 6.77
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.07851,
+                    57.91503,
+                    1620.0
+                ]
+            },
+            "properties": {
+                "time": 1749166463,
+                "gpheight": 1620.0,
+                "temp": 282.45,
+                "dewpoint": 278.25,
+                "pressure": 834.4,
+                "wind_u": 7.88,
+                "wind_v": 6.16,
+                "flags": 2048
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.08564,
+                    57.91903,
+                    2000.1
+                ]
+            },
+            "properties": {
+                "time": 1749166533,
+                "gpheight": 2000.0,
+                "temp": 280.05,
+                "dewpoint": 273.25,
+                "pressure": 796.1,
+                "wind_u": 4.5,
+                "wind_v": 7.79
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.09097,
+                    57.92488,
+                    2360.1
+                ]
+            },
+            "properties": {
+                "time": 1749166603,
+                "gpheight": 2360.0,
+                "temp": 277.25,
+                "dewpoint": 271.45,
+                "pressure": 762.9,
+                "wind_u": 3.76,
+                "wind_v": 10.34,
+                "flags": 8192
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.09213,
+                    57.9272,
+                    2500.1
+                ]
+            },
+            "properties": {
+                "time": 1749166628,
+                "gpheight": 2500.0,
+                "temp": 276.85,
+                "dewpoint": 272.05,
+                "pressure": 749.0,
+                "wind_u": 1.74,
+                "wind_v": 9.85,
+                "flags": 2048
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.09575,
+                    57.93509,
+                    3000.1
+                ]
+            },
+            "properties": {
+                "time": 1749166721,
+                "gpheight": 3000.0,
+                "temp": 273.65,
+                "dewpoint": 270.95,
+                "pressure": 704.8,
+                "wind_u": 2.66,
+                "wind_v": 10.67
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.10875,
+                    57.95237,
+                    4000.3
+                ]
+            },
+            "properties": {
+                "time": 1749166899,
+                "gpheight": 4000.0,
+                "temp": 268.65,
+                "dewpoint": 265.85,
+                "pressure": 621.5,
+                "wind_u": 3.95,
+                "wind_v": 8.09
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.11311,
+                    57.95607,
+                    4360.3
+                ]
+            },
+            "properties": {
+                "time": 1749166959,
+                "gpheight": 4360.0,
+                "temp": 267.25,
+                "dewpoint": 264.95,
+                "pressure": 593.7,
+                "wind_u": 5.54,
+                "wind_v": 7.09,
+                "flags": 8192
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.11618,
+                    57.95809,
+                    4520.3
+                ]
+            },
+            "properties": {
+                "time": 1749166989,
+                "gpheight": 4520.0,
+                "temp": 266.25,
+                "dewpoint": 264.15,
+                "pressure": 582.1,
+                "wind_u": 6.69,
+                "wind_v": 7.43,
+                "flags": 4096
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.11898,
+                    57.95931,
+                    4630.3
+                ]
+            },
+            "properties": {
+                "time": 1749167009,
+                "gpheight": 4630.0,
+                "temp": 265.45,
+                "dewpoint": 263.35,
+                "pressure": 573.8,
+                "wind_u": 7.64,
+                "wind_v": 7.91,
+                "flags": 2048
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.12725,
+                    57.96472,
+                    5000.4
+                ]
+            },
+            "properties": {
+                "time": 1749167074,
+                "gpheight": 5000.0,
+                "temp": 263.25,
+                "dewpoint": 260.85,
+                "pressure": 546.8,
+                "wind_u": 7.39,
+                "wind_v": 9.46
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.13141,
+                    57.96814,
+                    5220.4
+                ]
+            },
+            "properties": {
+                "time": 1749167114,
+                "gpheight": 5220.0,
+                "temp": 261.75,
+                "dewpoint": 259.15,
+                "pressure": 531.8,
+                "wind_u": 5.67,
+                "wind_v": 9.43,
+                "flags": 2048
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.14483,
+                    57.97777,
+                    6000.6
+                ]
+            },
+            "properties": {
+                "time": 1749167245,
+                "gpheight": 6000.0,
+                "temp": 257.15,
+                "dewpoint": 254.45,
+                "pressure": 479.6,
+                "wind_u": 6.82,
+                "wind_v": 7.31
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.14963,
+                    57.98014,
+                    6220.6
+                ]
+            },
+            "properties": {
+                "time": 1749167284,
+                "gpheight": 6220.0,
+                "temp": 255.85,
+                "dewpoint": 253.15,
+                "pressure": 466.1,
+                "wind_u": 8.78,
+                "wind_v": 6.62,
+                "flags": 2048
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.16076,
+                    57.98374,
+                    6620.7
+                ]
+            },
+            "properties": {
+                "time": 1749167354,
+                "gpheight": 6620.0,
+                "temp": 253.05,
+                "dewpoint": 249.85,
+                "pressure": 441.6,
+                "wind_u": 7.99,
+                "wind_v": 6.02,
+                "flags": 2048
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.17,
+                    57.98822,
+                    7000.8
+                ]
+            },
+            "properties": {
+                "time": 1749167422,
+                "gpheight": 7000.0,
+                "temp": 250.35,
+                "dewpoint": 247.05,
+                "pressure": 419.3,
+                "wind_u": 9.06,
+                "wind_v": 7.87
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.19875,
+                    58.00012,
+                    8001.0
+                ]
+            },
+            "properties": {
+                "time": 1749167588,
+                "gpheight": 8000.0,
+                "temp": 242.85,
+                "dewpoint": 239.45,
+                "pressure": 365.1,
+                "wind_u": 11.98,
+                "wind_v": 9.03
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.23807,
+                    58.01508,
+                    9001.3
+                ]
+            },
+            "properties": {
+                "time": 1749167763,
+                "gpheight": 9000.0,
+                "temp": 234.25,
+                "dewpoint": 231.05,
+                "pressure": 316.3,
+                "wind_u": 15.1,
+                "wind_v": 9.8
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.3014,
+                    58.0338,
+                    10001.6
+                ]
+            },
+            "properties": {
+                "time": 1749167975,
+                "gpheight": 10000.0,
+                "temp": 225.35,
+                "dewpoint": 222.35,
+                "pressure": 272.4,
+                "wind_u": 19.42,
+                "wind_v": 10.33
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.32358,
+                    58.04051,
+                    10311.7
+                ]
+            },
+            "properties": {
+                "time": 1749168040,
+                "gpheight": 10310.0,
+                "temp": 222.55,
+                "dewpoint": 219.35,
+                "pressure": 260.0,
+                "wind_u": 21.2,
+                "wind_v": 13.25,
+                "flags": 8192
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.32606,
+                    58.04137,
+                    10351.7
+                ]
+            },
+            "properties": {
+                "time": 1749168045,
+                "gpheight": 10350.0,
+                "temp": 222.35,
+                "dewpoint": 219.25,
+                "pressure": 258.5,
+                "wind_u": 20.97,
+                "wind_v": 13.62,
+                "flags": 2048
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.36231,
+                    58.0513,
+                    10811.9
+                ]
+            },
+            "properties": {
+                "time": 1749168135,
+                "gpheight": 10810.0,
+                "temp": 218.85,
+                "dewpoint": 215.65,
+                "pressure": 240.5,
+                "wind_u": 25.96,
+                "wind_v": 10.49,
+                "flags": 8192
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.37855,
+                    58.05386,
+                    11001.9
+                ]
+            },
+            "properties": {
+                "time": 1749168170,
+                "gpheight": 11000.0,
+                "temp": 218.65,
+                "dewpoint": 215.45,
+                "pressure": 233.7,
+                "wind_u": 27.42,
+                "wind_v": 9.44
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.39802,
+                    58.05723,
+                    11172.0
+                ]
+            },
+            "properties": {
+                "time": 1749168211,
+                "gpheight": 11170.0,
+                "temp": 217.65,
+                "dewpoint": 214.45,
+                "pressure": 227.5,
+                "wind_u": 28.84,
+                "wind_v": 8.27,
+                "flags": 18432
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.4491,
+                    58.06407,
+                    11612.2
+                ]
+            },
+            "properties": {
+                "time": 1749168306,
+                "gpheight": 11610.0,
+                "temp": 215.75,
+                "dewpoint": 212.75,
+                "pressure": 212.4,
+                "wind_u": 26.74,
+                "wind_v": 3.76,
+                "flags": 32768
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.49536,
+                    58.06567,
+                    12002.3
+                ]
+            },
+            "properties": {
+                "time": 1749168399,
+                "gpheight": 12000.0,
+                "temp": 218.05,
+                "dewpoint": 214.65,
+                "pressure": 199.6,
+                "wind_u": 22.99,
+                "wind_v": 0.8
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.49845,
+                    58.06575,
+                    12022.3
+                ]
+            },
+            "properties": {
+                "time": 1749168406,
+                "gpheight": 12020.0,
+                "temp": 218.75,
+                "dewpoint": 215.35,
+                "pressure": 199.1,
+                "wind_u": 23.0,
+                "wind_v": 0.4,
+                "flags": 10240
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.51565,
+                    58.0675,
+                    12502.5
+                ]
+            },
+            "properties": {
+                "time": 1749168481,
+                "gpheight": 12500.0,
+                "temp": 216.65,
+                "dewpoint": 213.45,
+                "pressure": 184.7,
+                "wind_u": 13.91,
+                "wind_v": 5.62,
+                "flags": 2048
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.53065,
+                    58.07069,
+                    12762.6
+                ]
+            },
+            "properties": {
+                "time": 1749168541,
+                "gpheight": 12760.0,
+                "temp": 214.95,
+                "dewpoint": 211.35,
+                "pressure": 177.1,
+                "wind_u": 16.26,
+                "wind_v": 4.97,
+                "flags": 8192
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.55039,
+                    58.0732,
+                    13002.7
+                ]
+            },
+            "properties": {
+                "time": 1749168601,
+                "gpheight": 13000.0,
+                "temp": 215.75,
+                "dewpoint": 212.05,
+                "pressure": 170.5,
+                "wind_u": 17.54,
+                "wind_v": 4.05
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.59004,
+                    58.07759,
+                    13823.1
+                ]
+            },
+            "properties": {
+                "time": 1749168761,
+                "gpheight": 13820.0,
+                "temp": 217.15,
+                "dewpoint": 213.15,
+                "pressure": 150.0,
+                "wind_u": 13.79,
+                "wind_v": 2.43,
+                "flags": 65536
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.60038,
+                    58.07756,
+                    14003.1
+                ]
+            },
+            "properties": {
+                "time": 1749168799,
+                "gpheight": 14000.0,
+                "temp": 216.95,
+                "dewpoint": 212.65,
+                "pressure": 145.7,
+                "wind_u": 13.83,
+                "wind_v": 2.19
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.60344,
+                    58.07811,
+                    14053.2
+                ]
+            },
+            "properties": {
+                "time": 1749168811,
+                "gpheight": 14050.0,
+                "temp": 216.95,
+                "dewpoint": 212.65,
+                "pressure": 144.5,
+                "wind_u": 13.83,
+                "wind_v": 2.19,
+                "flags": 2048
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.63966,
+                    58.08235,
+                    14923.6
+                ]
+            },
+            "properties": {
+                "time": 1749168982,
+                "gpheight": 14920.0,
+                "temp": 218.65,
+                "dewpoint": 213.45,
+                "pressure": 126.1,
+                "wind_u": 9.89,
+                "wind_v": 4.82,
+                "flags": 2048
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.67197,
+                    58.08768,
+                    15804.0
+                ]
+            },
+            "properties": {
+                "time": 1749169162,
+                "gpheight": 15800.0,
+                "temp": 221.75,
+                "dewpoint": 214.95,
+                "pressure": 110.1,
+                "wind_u": 9.46,
+                "wind_v": 3.26,
+                "flags": 2048
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.67248,
+                    58.08784,
+                    15804.0
+                ]
+            },
+            "properties": {
+                "time": 1749169167,
+                "gpheight": 15800.0,
+                "temp": 221.85,
+                "dewpoint": 215.05,
+                "pressure": 110.0,
+                "wind_u": 9.51,
+                "wind_v": 3.09,
+                "flags": 8192
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.67497,
+                    58.08904,
+                    16004.1
+                ]
+            },
+            "properties": {
+                "time": 1749169200,
+                "gpheight": 16000.0,
+                "temp": 221.05,
+                "dewpoint": 214.15,
+                "pressure": 106.7,
+                "wind_u": 9.56,
+                "wind_v": 2.92
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    34.68266,
+                    58.09189,
+                    16394.3
+                ]
+            },
+            "properties": {
+                "time": 1749169262,
+                "gpheight": 16390.0,
+                "temp": 220.25,
+                "dewpoint": 213.05,
+                "pressure": 100.4,
+                "wind_u": 9.66,
+                "wind_v": 2.59,
+                "flags": 12288
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        34.04558,
+                        57.89885,
+                        290.0
+                    ],
+                    [
+                        34.04958,
+                        57.90174,
+                        500.0
+                    ],
+                    [
+                        34.05016,
+                        57.90207,
+                        510.0
+                    ],
+                    [
+                        34.0519,
+                        57.90263,
+                        570.0
+                    ],
+                    [
+                        34.05661,
+                        57.90502,
+                        753.0
+                    ],
+                    [
+                        34.06353,
+                        57.90809,
+                        1000.0
+                    ],
+                    [
+                        34.07523,
+                        57.91374,
+                        1500.0
+                    ],
+                    [
+                        34.07851,
+                        57.91503,
+                        1620.0
+                    ],
+                    [
+                        34.08564,
+                        57.91903,
+                        2000.1
+                    ],
+                    [
+                        34.09097,
+                        57.92488,
+                        2360.1
+                    ],
+                    [
+                        34.09213,
+                        57.9272,
+                        2500.1
+                    ],
+                    [
+                        34.09575,
+                        57.93509,
+                        3000.1
+                    ],
+                    [
+                        34.10875,
+                        57.95237,
+                        4000.3
+                    ],
+                    [
+                        34.11311,
+                        57.95607,
+                        4360.3
+                    ],
+                    [
+                        34.11618,
+                        57.95809,
+                        4520.3
+                    ],
+                    [
+                        34.11898,
+                        57.95931,
+                        4630.3
+                    ],
+                    [
+                        34.12725,
+                        57.96472,
+                        5000.4
+                    ],
+                    [
+                        34.13141,
+                        57.96814,
+                        5220.4
+                    ],
+                    [
+                        34.14483,
+                        57.97777,
+                        6000.6
+                    ],
+                    [
+                        34.14963,
+                        57.98014,
+                        6220.6
+                    ],
+                    [
+                        34.16076,
+                        57.98374,
+                        6620.7
+                    ],
+                    [
+                        34.17,
+                        57.98822,
+                        7000.8
+                    ],
+                    [
+                        34.19875,
+                        58.00012,
+                        8001.0
+                    ],
+                    [
+                        34.23807,
+                        58.01508,
+                        9001.3
+                    ],
+                    [
+                        34.3014,
+                        58.0338,
+                        10001.6
+                    ],
+                    [
+                        34.32358,
+                        58.04051,
+                        10311.7
+                    ],
+                    [
+                        34.32606,
+                        58.04137,
+                        10351.7
+                    ],
+                    [
+                        34.36231,
+                        58.0513,
+                        10811.9
+                    ],
+                    [
+                        34.37855,
+                        58.05386,
+                        11001.9
+                    ],
+                    [
+                        34.39802,
+                        58.05723,
+                        11172.0
+                    ],
+                    [
+                        34.4491,
+                        58.06407,
+                        11612.2
+                    ],
+                    [
+                        34.49536,
+                        58.06567,
+                        12002.3
+                    ],
+                    [
+                        34.49845,
+                        58.06575,
+                        12022.3
+                    ],
+                    [
+                        34.51565,
+                        58.0675,
+                        12502.5
+                    ],
+                    [
+                        34.53065,
+                        58.07069,
+                        12762.6
+                    ],
+                    [
+                        34.55039,
+                        58.0732,
+                        13002.7
+                    ],
+                    [
+                        34.59004,
+                        58.07759,
+                        13823.1
+                    ],
+                    [
+                        34.60038,
+                        58.07756,
+                        14003.1
+                    ],
+                    [
+                        34.60344,
+                        58.07811,
+                        14053.2
+                    ],
+                    [
+                        34.63966,
+                        58.08235,
+                        14923.6
+                    ],
+                    [
+                        34.67197,
+                        58.08768,
+                        15804.0
+                    ],
+                    [
+                        34.67248,
+                        58.08784,
+                        15804.0
+                    ],
+                    [
+                        34.67497,
+                        58.08904,
+                        16004.1
+                    ],
+                    [
+                        34.68266,
+                        58.09189,
+                        16394.3
+                    ]
+                ]
+            },
+            "properties": {}
+        }
+    ],
+    "properties": {
+        "processed": 1749175448,
+        "lon": 34.04444,
+        "lat": 57.89778,
+        "elevation": 186.0,
+        "station_id": "26298",
+        "id_type": "wmo",
+        "origin_member": "A_IUKD02RUMS060000_C_EDZW_20250606013602_00013876.bin",
+        "origin_archive": "temp-fm94_michael_20250606-013610405145_695908.zip",
+        "arrived": 1749173771,
+        "syn_timestamp": 1749168000,
+        "firstSeen": 1749166200,
+        "repfmt": "fm94",
+        "path_source": "origin",
+        "encoding": "BUFR",
+        "channel": "GISC Offenbach",
+        "gts_topic": "rus/moscow/data/core/weather/surface-based-observations/upperair/temp",
+        "fmt": 8,
+        "text": "61616 20000",
+        "sonde_psensor": 4,
+        "sonde_tsensor": 1,
+        "sonde_hsensor": 4,
+        "sonde_gepot": 2,
+        "sonde_track": 3,
+        "sonde_measure": 3,
+        "sonde_swversion": "213/20152",
+        "sonde_type": 162,
+        "sonde_serial": "510473/513671",
+        "sonde_frequency": 1680000000.0,
+        "sonde_humcorr": 0,
+        "balloon_manufacturer": 4,
+        "balloon_type": 0,
+        "gas_type": 0,
+        "balloon_weight": 0.5,
+        "gas_weight": 1.1,
+        "sequence": 0,
+        "lastSeen": 1749169262
+    }
+}
