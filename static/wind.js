@@ -27,31 +27,83 @@ const drawWind = (data, dict, pressureScale) => {
 
         wind = uvToWind(data[i].wind_u, data[i].wind_v);
 
-        const windArrowLenght = 7;
+        const padding = 50;
+        
+        // Переводим градусы в радианы
+        const radians = (wind[1] * Math.PI) / 180;
 
-       svg.append("line")
-            .attr("x1", 20)
-            .attr("x2", (wind[0]*3) + windArrowLenght)
-            .attr("y1", 0)
-            .attr("y2", 0)
-            .attr("class", "mixing-ratio")
-            .attr("transform", "translate(0, " + (pressureScale(data[i].pressure) + 30) + ") rotate("+(wind[1]+180)+",0,0)");
+        // Координаты начала стрелки
+        const x0 = 50; // центр по оси X
+        const y0 = 50; // центр по оси Y
 
+        // Рассчитываем координаты конца стрелки
+        const length = wind[0] * 3; // Умножаем на 10 для масштабирования
+        const x1 = x0 + length * Math.sin(radians);
+        const y1 = y0 - length * Math.cos(radians); // y уменьшается по мере увеличения
+
+        // Добавляем линию
         svg.append("line")
-            .attr("x1", (wind[0]*3) + windArrowLenght - 5)
-            .attr("x2", (wind[0]*3) + windArrowLenght)
-            .attr("y1", 5)
-            .attr("y2", 0)
-            .attr("class", "mixing-ratio")
-            .attr("transform", "translate(0, " + (pressureScale(data[i].pressure) + 30) + ") rotate("+(wind[1]+180)+",0,0)");
+            .attr("x1", x0)
+            .attr("y1", y0)
+            .attr("x2", x1)
+            .attr("y2", y1)
+            .attr("class", "arrow")
+            .attr("transform", "translate(0, " + (pressureScale(data[i].pressure) + 30) + ")");
+
+        // Добавляем наконечник стрелки
+        svg.append("polygon")
+            .attr("points", `
+                ${x1},${y1} 
+                ${x1 - 5 * Math.sin(radians + Math.PI / 6)},${y1 + 5 * Math.cos(radians + Math.PI / 6)} 
+                ${x1 - 5 * Math.sin(radians - Math.PI / 6)},${y1 + 5 * Math.cos(radians - Math.PI / 6)}
+            `)
+            .attr("class", "arrow")
+            .attr("transform", "translate(0, " + (pressureScale(data[i].pressure) + 30) + ")");
+/*
+
+
+        const windArrowLenght = Math.log10(wind[0]/2) + Math.e;// \ln\left(\frac{x}{2}+0.08\right)+e
+        const rotate_direction_rad = (90 - wind[1]) * 180 / Math.PI;
+
+        console.log(wind, wind[1] + 180);
         
         svg.append("line")
-            .attr("x1", (wind[0]*3) + windArrowLenght)
-            .attr("x2", (wind[0]*3) + windArrowLenght +5)
-            .attr("y1", -5)
-            .attr("y2", 0)
+            .attr("x1", 10)
+            .attr("x2", 20/Math.cos(45))
+            .attr("y1", 10)
+            .attr("y2", 20/Math.sin(45))
             .attr("class", "mixing-ratio")
-            .attr("transform", "translate(0, " + (pressureScale(data[i].pressure) + 30) + ") rotate("+(wind[1]+180)+",0,0)");
+            .attr("transform", "translate(0, " + (pressureScale(data[i].pressure) + 30) + ")");
+            //.attr("transform", "translate(0, " + (pressureScale(data[i].pressure) + 30) + ") rotate("+(-45)+",0,0)");
+*/
+
+
+      /* svg.append("line")
+            .attr("x1", padding)
+            .attr("x2", -(windArrowLenght * data[i].wind_u / wind[0]) + padding)
+            .attr("y1", 0)
+            .attr("y2", windArrowLenght * data[i].wind_v / wind[0])
+            .attr("class", "mixing-ratio")
+            .attr("transform", "translate(0, " + (pressureScale(data[i].pressure) + 30) + ")");
+            //.attr("transform", "translate(0, " + (pressureScale(data[i].pressure) + 30) + ") rotate("+(-45)+",0,0)");
+
+        /*svg.append("line")
+            .attr("x1", windArrowLenght)
+            .attr("x2", windArrowLenght-5)
+            .attr("y1", 0)
+            .attr("y2", -5)
+            .attr("class", "mixing-ratio")
+            .attr("transform", "translate(0, " + (pressureScale(data[i].pressure) + 30) + ")");
+            //.attr("transform", "translate(0, " + (pressureScale(data[i].pressure) + 30) + ") rotate("+(rotate_direction)+",0,0)");
+        
+        svg.append("line")
+            .attr("x1", windArrowLenght)
+            .attr("x2", windArrowLenght-5)
+            .attr("y1", 0)
+            .attr("y2", 5)
+            .attr("class", "mixing-ratio")
+            .attr("transform", "translate(0, " + (pressureScale(data[i].pressure) + 30) + ")");
+            //.attr("transform", "translate(0, " + (pressureScale(data[i].pressure) + 30) + ") rotate("+(rotate_direction)+",0,0)");
 
 console.log(wind[1])
 
@@ -60,8 +112,15 @@ console.log(wind[1])
             .attr("x2", 15 + 20)
             .attr("y1", 10)
             .attr("y2", 10)
-            .attr("class", "mixing-ratio");*/
+            .attr("class", "mixing-ratio");
             //.attr("transform", "translate(0, " + pressureScale(data[i].pressure) + ") rotate("+(wind[1])+",0,0)");
+
+        svg.append("line")
+            .attr("x1", 20 + 10)
+            .attr("x2", 15 + 20)
+            .attr("y1", 5)
+            .attr("y2", 10)
+            .attr("class", "mixing-ratio");*/
 
 
         // Добавляем метку со скоростью

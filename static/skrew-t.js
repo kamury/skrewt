@@ -19,12 +19,12 @@ if (highScale) {
 
 if (highScale == 3500) {
     pressure_top = 700;
-    temp_base = 5;
-    temp_top = 30;
+    temp_base = 15;
+    temp_top = 40;
 } else if (highScale == 6000) {
     pressure_top = 450;
-    temp_base = -10;
-    temp_top = 30;
+    temp_base = 0;
+    temp_top = 40;
 }
 
 import { drawGrid } from "./grid.js";
