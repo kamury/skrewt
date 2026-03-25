@@ -9,7 +9,7 @@ const loadData = (url) => {
     });*/
 
     return new Promise(function(resolve, reject) {
-        fetch(`/api/`).
+        fetch(`/api/1`).
         then(function(data) {
             return resolve(data.json());
         });

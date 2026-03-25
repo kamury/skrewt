@@ -16,48 +16,64 @@ NOAA_DELAY = 3
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
 # Эндпоинт для получения данных
-@api_bp.route('/', methods=['GET'])
-def get_sounding_data():
-    data = read_grib('f', 54.8, 37.9)
-
+@api_bp.route('/<int:spot_id>', methods=['GET'])
+def get_sounding_data(spot_id):
+    data = models.get_sounding_data(spot_id)
     return jsonify(data)
 
 @api_bp.route('/load', methods=['GET'])
 def load_by_cron():
-    spots = models.get_all_spots()
-
+    
     hours = [0, 6, 12, 18]
+    local_hours = [0, 9, 12, 15, 18]
 
-    # Получить текущее время UTC
+    #Получить текущее время UTC
     utc_now = datetime.now(timezone.utc)
+    
     i = len(hours) - 1
     while(hours[i] > (utc_now.hour - NOAA_DELAY)):
         i-=1
-    current_noaa_hour = hours[i]
+    noaa_hour = hours[i]
     
-    if current_noaa_hour < 12:
-        current_noaa_hour_str = f'0{current_noaa_hour}'
+    #добавляем ноль впереди, если нужно
+    if noaa_hour < 12:
+        noaa_hour_sql = f'0{noaa_hour}'
     else:
-        current_noaa_hour_str = current_noaa_hour
+        noaa_hour_sql = noaa_hour
 
-    current_noaa_date = utc_now.strftime('%Y%m%d')
+    noaa_date = utc_now.strftime('%Y%m%d')
+    noaa_date_sql = utc_now.strftime('%Y-%m-%d')
+
+
+
+    spots = models.get_all_spots()
 
     for spot in spots:
-        print(spot)
+        #проверяем, может мы на эти даты уже запрашивали
+        #if models.is_forecast_exist(spot['id'], noaa_date_sql, noaa_hour):
+        #    continue
+
         lat = int(spot['latitude'])
         lon = int(spot['longtitude'])
 
-        url = f"https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25_1hr.pl?dir=%2Fgfs.{current_noaa_date}%2F{current_noaa_hour_str}%2Fatmos&file=gfs.t{current_noaa_hour_str}z.pgrb2.0p25.anl&var_RH=on&var_TMP=on&var_UGRD=on&var_VGRD=on&lev_1829_m_above_mean_sea_level=on&lev_2743_m_above_mean_sea_level=on&lev_3658_m_above_mean_sea_level=on&lev_1000_mb=on&lev_975_mb=on&lev_950_mb=on&lev_925_mb=on&lev_900_mb=on&lev_850_mb=on&lev_800_mb=on&lev_750_mb=on&lev_700_mb=on&lev_650_mb=on&lev_600_mb=on&lev_550_mb=on&lev_500_mb=on&lev_450_mb=on&lev_400_mb=on&lev_350_mb=on&lev_300_mb=on&lev_250_mb=on&lev_200_mb=on&lev_150_mb=on&lev_100_mb=on&lev_surface=on&lev_max_wind=on&lev_mean_sea_level=on&lev_boundary_layer_cloud_layer=on&lev_convective_cloud_layer=on&lev_convective_cloud_bottom_level=on&lev_convective_cloud_top_level=on&lev_high_cloud_layer=on&lev_high_cloud_bottom_level=on&lev_high_cloud_top_level=on&lev_low_cloud_layer=on&lev_low_cloud_bottom_level=on&lev_low_cloud_top_level=on&lev_middle_cloud_layer=on&lev_middle_cloud_bottom_level=on&lev_middle_cloud_top_level=on&subregion=&toplat={lat+1}&leftlon={lon}&rightlon={lon+1}&bottomlat={lat}"
+        url = f"https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25_1hr.pl?dir=%2Fgfs.{noaa_date}%2F{noaa_hour_sql}%2Fatmos&file=gfs.t{noaa_hour_sql}z.pgrb2.0p25.anl&var_RH=on&var_TMP=on&var_UGRD=on&var_VGRD=on&lev_1829_m_above_mean_sea_level=on&lev_2743_m_above_mean_sea_level=on&lev_3658_m_above_mean_sea_level=on&lev_1000_mb=on&lev_975_mb=on&lev_950_mb=on&lev_925_mb=on&lev_900_mb=on&lev_850_mb=on&lev_800_mb=on&lev_750_mb=on&lev_700_mb=on&lev_650_mb=on&lev_600_mb=on&lev_550_mb=on&lev_500_mb=on&lev_450_mb=on&lev_400_mb=on&lev_350_mb=on&lev_300_mb=on&lev_250_mb=on&lev_200_mb=on&lev_150_mb=on&lev_100_mb=on&lev_surface=on&lev_max_wind=on&lev_mean_sea_level=on&lev_boundary_layer_cloud_layer=on&lev_convective_cloud_layer=on&lev_convective_cloud_bottom_level=on&lev_convective_cloud_top_level=on&lev_high_cloud_layer=on&lev_high_cloud_bottom_level=on&lev_high_cloud_top_level=on&lev_low_cloud_layer=on&lev_low_cloud_bottom_level=on&lev_low_cloud_top_level=on&lev_middle_cloud_layer=on&lev_middle_cloud_bottom_level=on&lev_middle_cloud_top_level=on&subregion=&toplat={lat+1}&leftlon={lon}&rightlon={lon+1}&bottomlat={lat}"
 
         data = read_grib(url, spot['latitude'], spot['longtitude'])
 
+        #TODO: последний параметр, дата прогноза в файле
+        #models.save_forecast(data, spot['id'], noaa_date_sql, noaa_hour, utc_now)
+        models.clean_previous_forecast(spot['id'], noaa_date_sql, noaa_hour)
+
+        #если этих данных нет в архиве, пишем
+        if not (models.is_archive_exist(spot['id'], noaa_date_sql, noaa_hour_sql)):
+            models.save_sounding_archive(spot['id'], noaa_date_sql, noaa_hour_sql, data)
         
-        print(url)
+        print(noaa_date, noaa_hour, url)
         #request_date = 
 
         #url = "https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25_1hr.pl?dir=%2Fgfs.20260318%2F00%2Fatmos&file=gfs.t00z.pgrb2.0p25.f000&var_RH=on&var_TMP=on&var_UGRD=on&var_VGRD=on&lev_1829_m_above_mean_sea_level=on&lev_2743_m_above_mean_sea_level=on&lev_3658_m_above_mean_sea_level=on&lev_1000_mb=on&lev_975_mb=on&lev_950_mb=on&lev_925_mb=on&lev_900_mb=on&lev_850_mb=on&lev_800_mb=on&lev_750_mb=on&lev_700_mb=on&lev_650_mb=on&lev_600_mb=on&lev_550_mb=on&lev_500_mb=on&lev_450_mb=on&lev_400_mb=on&lev_350_mb=on&lev_300_mb=on&lev_250_mb=on&lev_200_mb=on&lev_150_mb=on&lev_100_mb=on&lev_surface=on&lev_max_wind=on&lev_mean_sea_level=on&lev_boundary_layer_cloud_layer=on&lev_convective_cloud_layer=on&lev_convective_cloud_bottom_level=on&lev_convective_cloud_top_level=on&lev_high_cloud_layer=on&lev_high_cloud_bottom_level=on&lev_high_cloud_top_level=on&lev_low_cloud_layer=on&lev_low_cloud_bottom_level=on&lev_low_cloud_top_level=on&lev_middle_cloud_layer=on&lev_middle_cloud_bottom_level=on&lev_middle_cloud_top_level=on&subregion=&toplat=55&leftlon=37&rightlon=38&bottomlat=54"
 
-
+    print(333)
     return jsonify(spots)
 
 
@@ -92,20 +108,7 @@ def get_dd():
             'wind_v': 22
     })
     return jsonify(models.save_forecast(data))
-
-def get_average_value(field, indexes, distances):
-    values, lat1, lon1 = field.data()
-
-    #собираем в массив 4 значения для ближайших точек
-    closest_nodes_values = np.array([values[indexes[0][0]][indexes[0][1]], 
-                                    values[indexes[1][0]][indexes[1][1]],
-                                    values[indexes[2][0]][indexes[2][1]],
-                                    values[indexes[3][0]][indexes[3][1]]])
-
-    #возвращаем взвешеное среднее
-    return np.sum(closest_nodes_values * distances) / sum(distances)
-    #return average_with_distances(closest_nodes_values, distances)
-
+    
 def read_grib(url, point_lat, point_lon):
     response = requests.get(url)
 
@@ -207,6 +210,17 @@ def read_grib(url, point_lat, point_lon):
     #удаляем временный grib
     if os.path.exists(temp_path):
         os.unlink(temp_path)
-
     
     return data
+
+def get_average_value(field, indexes, distances):
+    values, lat1, lon1 = field.data()
+
+    #собираем в массив 4 значения для ближайших точек
+    closest_nodes_values = np.array([values[indexes[0][0]][indexes[0][1]], 
+                                    values[indexes[1][0]][indexes[1][1]],
+                                    values[indexes[2][0]][indexes[2][1]],
+                                    values[indexes[3][0]][indexes[3][1]]])
+
+    #возвращаем взвешеное среднее
+    return np.sum(closest_nodes_values * distances) / sum(distances)

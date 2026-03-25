@@ -12,16 +12,24 @@ def is_active_spot(spot_id):
 def set_spot_as_active(spot_id):
     return query_db('UPDATE spots SET last_request=%s WHERE id=%s', [datetime.now(), spot_id], one=True)
 
-def save_forecast(data):
+def get_sounding_data(spot_id):
+    return query_db("SELECT * FROM forecast WHERE spot_id=%s ORDER BY pressure", [spot_id])
+
+def is_forecast_exist(spot_id, request_date, request_time):
+    query = "SELECT EXISTS(SELECT 1 FROM forecast WHERE spot_id=%s AND request_date=%s AND request_time=%s) as exists_flag"
+    print(query)
+    result = query_db(query, [spot_id, request_date, request_time], one=True)
+    return bool(result['exists_flag']) if result else False
+
+def save_forecast(data, spot_id, request_date, request_time, datetime):
     # Преобразуем список словарей в плоский список значений
     values = []
     for row in data:
-        # Убедитесь, что порядок полей совпадает с ORDER в INSERT
         values.extend([
-            row['spot_id'],
-            row['request_date'],
-            row['request_time'],
-            row['timestamp'],
+            spot_id,
+            request_date,
+            request_time,
+            datetime,
             row['dewpoint'],
             row['pressure'],
             row['temp'],
@@ -32,26 +40,43 @@ def save_forecast(data):
     # Создаем плейсхолдеры
     placeholders = ','.join(['(%s, %s, %s, %s, %s, %s, %s, %s, %s)'] * len(data))
 
-    print(data, values)
-
     query = f'''
         INSERT INTO forecast 
-        (spot_id, request_date, request_time, `timestamp`, dewpoint, pressure, temp, wind_u, wind_v)
+        (spot_id, request_date, request_time, `datetime`, dewpoint, pressure, temp, wind_u, wind_v)
         VALUES {placeholders}
     '''
     
     return query_db(query, values)
 
-def clean_previous_forecast(request_date, request_time):
-    return query_db('DELETE FROM forecast WHERE request_date < %s OR request_time < %s', [request_date, request_time], one=True);
+def clean_previous_forecast(spot_id, request_date, request_time):
+    return query_db('DELETE FROM forecast WHERE spot_id=%s AND (request_date < %s OR request_time < %s)', 
+                    [spot_id, request_date, request_time]);
 
+def is_archive_exist(spot_id, datetime):
+    query = "SELECT EXISTS(SELECT 1 FROM sounding_archive WHERE spot_id=%s AND datetime=%s) as exists_flag"
+    result = query_db(query, [spot_id, request_date, request_time], one=True)
+    return bool(result['exists_flag']) if result else False
 
+def save_sounding_archive(station_id, datetime, query):
+    # Преобразуем список словарей в плоский список значений
+    values = []
+    for row in data:
+        values.extend([
+            spot_id,
+            datetime,
+            row['dewpoint'],
+            row['pressure'],
+            row['temp'],
+            row['wind_u'],
+            row['wind_v']
+        ])
+
+    # Создаем плейсхолдеры
+    placeholders = ','.join(['(%s, %s, %s, %s, %s, %s, %s)'] * len(data))
+
+    query = f'''
+        INSERT INTO sounding_archive 
+        (spot_id, `datetime`, dewpoint, pressure, temp, wind_u, wind_v)
+        VALUES {placeholders}
+    '''
     return query_db(query, values)
-
-def add_sounding_archive(station_id, query):
-    return query_db(
-        '''INSERT INTO souding_data 
-            (spot_id, `timestamp`, dewpoint, pressure, temp, wind_u, wind_v)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)''',
-        [spot_id, query.timestamp, query.dewpoint, query.pressure, query.wind_u, query.wind_v]
-    )
