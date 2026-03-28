@@ -5,7 +5,7 @@ import tempfile
 import math
 import numpy as np
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from metpy.calc import dewpoint_from_relative_humidity
 from metpy.units import units
 import models
@@ -21,57 +21,91 @@ def get_sounding_data(spot_id):
     data = models.get_sounding_data(spot_id)
     return jsonify(data)
 
+    data_by_datetime = {}
+    set = []
+    current_datetime = False
+    data = models.get_sounding_data(spot_id)
+    for d in data:
+        if d['datetime'] == current_datetime:
+            set.append(d)
+        else:
+            if current_datetime:
+                data_by_datetime[current_datetime.strftime('%Y-%m-%d %H:%M')] = set
+                set = []
+            current_datetime = d['datetime']
+
+
+
+    return jsonify(data_by_datetime)
+
 @api_bp.route('/load', methods=['GET'])
 def load_by_cron():
-    
     hours = [0, 6, 12, 18]
     local_hours = [0, 9, 12, 15, 18]
 
     #Получить текущее время UTC
     utc_now = datetime.now(timezone.utc)
-    
-    i = len(hours) - 1
-    while(hours[i] > (utc_now.hour - NOAA_DELAY)):
-        i-=1
-    noaa_hour = hours[i]
-    
-    #добавляем ноль впереди, если нужно
-    if noaa_hour < 12:
-        noaa_hour_sql = f'0{noaa_hour}'
-    else:
-        noaa_hour_sql = noaa_hour
+    noaa_hour = max([h for h in hours if h < (utc_now.hour - NOAA_DELAY)])
 
-    noaa_date = utc_now.strftime('%Y%m%d')
-    noaa_date_sql = utc_now.strftime('%Y-%m-%d')
-
-
+    #для подстановки в урл
+    noaa_date_url = utc_now.strftime('%Y%m%d')
+    #datetime c noaa_hour для записи в таблицу даты anl
+    noaa_datetime = datetime.strptime(f'{utc_now.date()} {noaa_hour}:00', '%Y-%m-%d %H:%M')
 
     spots = models.get_all_spots()
 
     for spot in spots:
         #проверяем, может мы на эти даты уже запрашивали
-        #if models.is_forecast_exist(spot['id'], noaa_date_sql, noaa_hour):
-        #    continue
+        if models.is_forecast_exist(spot['id'], utc_now.date(), noaa_hour):
+            print(spot['id'], 444)
+            continue
 
         lat = int(spot['latitude'])
         lon = int(spot['longtitude'])
 
-        url = f"https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25_1hr.pl?dir=%2Fgfs.{noaa_date}%2F{noaa_hour_sql}%2Fatmos&file=gfs.t{noaa_hour_sql}z.pgrb2.0p25.anl&var_RH=on&var_TMP=on&var_UGRD=on&var_VGRD=on&lev_1829_m_above_mean_sea_level=on&lev_2743_m_above_mean_sea_level=on&lev_3658_m_above_mean_sea_level=on&lev_1000_mb=on&lev_975_mb=on&lev_950_mb=on&lev_925_mb=on&lev_900_mb=on&lev_850_mb=on&lev_800_mb=on&lev_750_mb=on&lev_700_mb=on&lev_650_mb=on&lev_600_mb=on&lev_550_mb=on&lev_500_mb=on&lev_450_mb=on&lev_400_mb=on&lev_350_mb=on&lev_300_mb=on&lev_250_mb=on&lev_200_mb=on&lev_150_mb=on&lev_100_mb=on&lev_surface=on&lev_max_wind=on&lev_mean_sea_level=on&lev_boundary_layer_cloud_layer=on&lev_convective_cloud_layer=on&lev_convective_cloud_bottom_level=on&lev_convective_cloud_top_level=on&lev_high_cloud_layer=on&lev_high_cloud_bottom_level=on&lev_high_cloud_top_level=on&lev_low_cloud_layer=on&lev_low_cloud_bottom_level=on&lev_low_cloud_top_level=on&lev_middle_cloud_layer=on&lev_middle_cloud_bottom_level=on&lev_middle_cloud_top_level=on&subregion=&toplat={lat+1}&leftlon={lon}&rightlon={lon+1}&bottomlat={lat}"
-
+        url = f"https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25_1hr.pl?dir=%2Fgfs.{noaa_date_url}%2F{noaa_hour:02d}%2Fatmos&file=gfs.t{noaa_hour:02d}z.pgrb2.0p25.anl&var_RH=on&var_TMP=on&var_UGRD=on&var_VGRD=on&lev_1829_m_above_mean_sea_level=on&lev_2743_m_above_mean_sea_level=on&lev_3658_m_above_mean_sea_level=on&lev_1000_mb=on&lev_975_mb=on&lev_950_mb=on&lev_925_mb=on&lev_900_mb=on&lev_850_mb=on&lev_800_mb=on&lev_750_mb=on&lev_700_mb=on&lev_650_mb=on&lev_600_mb=on&lev_550_mb=on&lev_500_mb=on&lev_450_mb=on&lev_400_mb=on&lev_350_mb=on&lev_300_mb=on&lev_250_mb=on&lev_200_mb=on&lev_150_mb=on&lev_100_mb=on&lev_surface=on&lev_max_wind=on&lev_mean_sea_level=on&lev_boundary_layer_cloud_layer=on&lev_convective_cloud_layer=on&lev_convective_cloud_bottom_level=on&lev_convective_cloud_top_level=on&lev_high_cloud_layer=on&lev_high_cloud_bottom_level=on&lev_high_cloud_top_level=on&lev_low_cloud_layer=on&lev_low_cloud_bottom_level=on&lev_low_cloud_top_level=on&lev_middle_cloud_layer=on&lev_middle_cloud_bottom_level=on&lev_middle_cloud_top_level=on&subregion=&toplat={lat+1}&leftlon={lon}&rightlon={lon+1}&bottomlat={lat}"
+        #читаем гриб, пишем данные в табличку
         data = read_grib(url, spot['latitude'], spot['longtitude'])
-
-        #TODO: последний параметр, дата прогноза в файле
-        #models.save_forecast(data, spot['id'], noaa_date_sql, noaa_hour, utc_now)
-        models.clean_previous_forecast(spot['id'], noaa_date_sql, noaa_hour)
+        models.save_forecast(data, spot['id'], utc_now.date(), noaa_hour, noaa_datetime)
+        #чистим все, что старше на 2 дня чем сегодня
+        yesterday_date = utc_now.date() - timedelta(days=1)
+        models.clean_previous_forecast(spot['id'], yesterday_date)
 
         #если этих данных нет в архиве, пишем
-        if not (models.is_archive_exist(spot['id'], noaa_date_sql, noaa_hour_sql)):
-            models.save_sounding_archive(spot['id'], noaa_date_sql, noaa_hour_sql, data)
+        if not (models.is_archive_exist(spot['id'], noaa_datetime)):
+            models.save_sounding_archive(spot['id'], noaa_datetime, data)
         
-        print(noaa_date, noaa_hour, url)
-        #request_date = 
+        #сдвигаем массив часов, которые мы хотим показывать, по utc
+        utc_local_hours = [(h - spot['timezone']) % 24 for h in local_hours]
+        utc_local_hours.sort()
 
-        #url = "https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25_1hr.pl?dir=%2Fgfs.20260318%2F00%2Fatmos&file=gfs.t00z.pgrb2.0p25.f000&var_RH=on&var_TMP=on&var_UGRD=on&var_VGRD=on&lev_1829_m_above_mean_sea_level=on&lev_2743_m_above_mean_sea_level=on&lev_3658_m_above_mean_sea_level=on&lev_1000_mb=on&lev_975_mb=on&lev_950_mb=on&lev_925_mb=on&lev_900_mb=on&lev_850_mb=on&lev_800_mb=on&lev_750_mb=on&lev_700_mb=on&lev_650_mb=on&lev_600_mb=on&lev_550_mb=on&lev_500_mb=on&lev_450_mb=on&lev_400_mb=on&lev_350_mb=on&lev_300_mb=on&lev_250_mb=on&lev_200_mb=on&lev_150_mb=on&lev_100_mb=on&lev_surface=on&lev_max_wind=on&lev_mean_sea_level=on&lev_boundary_layer_cloud_layer=on&lev_convective_cloud_layer=on&lev_convective_cloud_bottom_level=on&lev_convective_cloud_top_level=on&lev_high_cloud_layer=on&lev_high_cloud_bottom_level=on&lev_high_cloud_top_level=on&lev_low_cloud_layer=on&lev_low_cloud_bottom_level=on&lev_low_cloud_top_level=on&lev_middle_cloud_layer=on&lev_middle_cloud_bottom_level=on&lev_middle_cloud_top_level=on&subregion=&toplat=55&leftlon=37&rightlon=38&bottomlat=54"
+        #массив из всех utc_local_hours которые позже нашего anl
+        today = [h for h in utc_local_hours if h > noaa_hour]
+
+        print(utc_local_hours)
+
+        for time in today:
+            f = time - noaa_hour
+            hour_timezone = (time + spot['timezone']) % 24
+            forecast_datetime = datetime.strptime(f'{utc_now.date()} {hour_timezone}:00', '%Y-%m-%d %H:%M')
+            print(f, time, noaa_hour)
+            url = f"https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25_1hr.pl?dir=%2Fgfs.{noaa_date_url}%2F{noaa_hour:02d}%2Fatmos&file=gfs.t{noaa_hour:02d}z.pgrb2.0p25.f0{f:02d}&var_RH=on&var_TMP=on&var_UGRD=on&var_VGRD=on&lev_1829_m_above_mean_sea_level=on&lev_2743_m_above_mean_sea_level=on&lev_3658_m_above_mean_sea_level=on&lev_1000_mb=on&lev_975_mb=on&lev_950_mb=on&lev_925_mb=on&lev_900_mb=on&lev_850_mb=on&lev_800_mb=on&lev_750_mb=on&lev_700_mb=on&lev_650_mb=on&lev_600_mb=on&lev_550_mb=on&lev_500_mb=on&lev_450_mb=on&lev_400_mb=on&lev_350_mb=on&lev_300_mb=on&lev_250_mb=on&lev_200_mb=on&lev_150_mb=on&lev_100_mb=on&lev_surface=on&lev_max_wind=on&lev_mean_sea_level=on&lev_boundary_layer_cloud_layer=on&lev_convective_cloud_layer=on&lev_convective_cloud_bottom_level=on&lev_convective_cloud_top_level=on&lev_high_cloud_layer=on&lev_high_cloud_bottom_level=on&lev_high_cloud_top_level=on&lev_low_cloud_layer=on&lev_low_cloud_bottom_level=on&lev_low_cloud_top_level=on&lev_middle_cloud_layer=on&lev_middle_cloud_bottom_level=on&lev_middle_cloud_top_level=on&subregion=&toplat={lat+1}&leftlon={lon}&rightlon={lon+1}&bottomlat={lat}"
+            data = read_grib(url, spot['latitude'], spot['longtitude'])
+            models.save_forecast(data, spot['id'], utc_now.date(), noaa_hour, forecast_datetime)
+
+        for i in range(1,4):
+            forecast_date = utc_now.date() + timedelta(days=i)
+            for time in utc_local_hours:
+                f = (time + 24*i) - noaa_hour
+                hour_timezone = (time + spot['timezone']) % 24
+                forecast_datetime = datetime.strptime(f'{forecast_date} {hour_timezone}:00', '%Y-%m-%d %H:%M')
+                print(f, forecast_datetime, time, noaa_hour)
+                url = f"https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25_1hr.pl?dir=%2Fgfs.{noaa_date_url}%2F{noaa_hour:02d}%2Fatmos&file=gfs.t{noaa_hour:02d}z.pgrb2.0p25.f0{f:02d}&var_RH=on&var_TMP=on&var_UGRD=on&var_VGRD=on&lev_1829_m_above_mean_sea_level=on&lev_2743_m_above_mean_sea_level=on&lev_3658_m_above_mean_sea_level=on&lev_1000_mb=on&lev_975_mb=on&lev_950_mb=on&lev_925_mb=on&lev_900_mb=on&lev_850_mb=on&lev_800_mb=on&lev_750_mb=on&lev_700_mb=on&lev_650_mb=on&lev_600_mb=on&lev_550_mb=on&lev_500_mb=on&lev_450_mb=on&lev_400_mb=on&lev_350_mb=on&lev_300_mb=on&lev_250_mb=on&lev_200_mb=on&lev_150_mb=on&lev_100_mb=on&lev_surface=on&lev_max_wind=on&lev_mean_sea_level=on&lev_boundary_layer_cloud_layer=on&lev_convective_cloud_layer=on&lev_convective_cloud_bottom_level=on&lev_convective_cloud_top_level=on&lev_high_cloud_layer=on&lev_high_cloud_bottom_level=on&lev_high_cloud_top_level=on&lev_low_cloud_layer=on&lev_low_cloud_bottom_level=on&lev_low_cloud_top_level=on&lev_middle_cloud_layer=on&lev_middle_cloud_bottom_level=on&lev_middle_cloud_top_level=on&subregion=&toplat={lat+1}&leftlon={lon}&rightlon={lon+1}&bottomlat={lat}"
+                data = read_grib(url, spot['latitude'], spot['longtitude'])
+                models.save_forecast(data, spot['id'], utc_now.date(), noaa_hour, forecast_datetime)
+
+
+
 
     print(333)
     return jsonify(spots)
@@ -110,6 +144,8 @@ def get_dd():
     return jsonify(models.save_forecast(data))
     
 def read_grib(url, point_lat, point_lon):
+    print('read', url)
+
     response = requests.get(url)
 
     with tempfile.NamedTemporaryFile(mode='wb', suffix='.grib', delete=False) as f:
@@ -130,6 +166,9 @@ def read_grib(url, point_lat, point_lon):
                 isobaric_levels.append(grb.level)
             elif grb.typeOfLevel == 'heightAboveSea':
                 aboveSea_levels.append(grb.level)
+
+    print(isobaric_levels)
+    print(aboveSea_levels)
 
     #определяем индексы координат ближайших точкек и веса
     distances = []
@@ -167,6 +206,7 @@ def read_grib(url, point_lat, point_lon):
 
         for p in params:
             field = grbs.select(shortName=p, level=level)[0]
+            print('param', p)
             line[params[p]] = get_average_value(field, indexes, distances)
 
         #влажность
@@ -183,9 +223,16 @@ def read_grib(url, point_lat, point_lon):
 
     for i, level in enumerate(aboveSea_levels):
         line = {}
+
         for p in params:
             field = grbs.select(shortName=p, typeOfLevel='heightAboveSea', level=level)[0]
             line[params[p]] = get_average_value(field, indexes, distances)
+
+        print(line['temp'], math.isnan(line['temp']))
+
+        #может не быть значений для этого левела
+        if math.isnan(line['temp']):
+            continue        
 
         #влажность
         boundary1 = (pressureToSea[i] // 50) * 50
@@ -215,6 +262,7 @@ def read_grib(url, point_lat, point_lon):
 
 def get_average_value(field, indexes, distances):
     values, lat1, lon1 = field.data()
+    print(values)
 
     #собираем в массив 4 значения для ближайших точек
     closest_nodes_values = np.array([values[indexes[0][0]][indexes[0][1]], 

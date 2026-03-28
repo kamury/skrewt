@@ -9,7 +9,7 @@ const loadData = (url) => {
     });*/
 
     return new Promise(function(resolve, reject) {
-        fetch(`/api/1`).
+        fetch(`/api/2`).
         then(function(data) {
             return resolve(data.json());
         });
@@ -110,10 +110,12 @@ const drawGraphics = (svg, dict, pressureScale, stratificationLine, dewpointLine
 
         let full_data = [];
 
+        //let full_data = data
+
         //full_data.push(proceesGeoJson(geojson));
         full_data.push(geojson);
 
-        console.log(33333, geojson);
+        console.log(33333, full_data);
 
         render(full_data, 0, svg, dict, pressureScale, stratificationLine, dewpointLine);
 
