@@ -37,7 +37,7 @@ const drawWind = (data, dict, pressureScale) => {
         const y0 = 50; // центр по оси Y
 
         // Рассчитываем координаты конца стрелки
-        const length = wind[0] * 3; // Умножаем на 10 для масштабирования
+        const length = 8;//wind[0] * 3; // Умножаем на 10 для масштабирования
         const x1 = x0 + length * Math.sin(radians);
         const y1 = y0 - length * Math.cos(radians); // y уменьшается по мере увеличения
 
@@ -122,13 +122,15 @@ console.log(wind[1])
             .attr("y2", 10)
             .attr("class", "mixing-ratio");*/
 
+        let wind_speed = Math.round(wind[0])
+
 
         // Добавляем метку со скоростью
         svg.append("text")
             .attr("class", "speed-label")
             .attr("x", 40)
             .attr("y", 30)
-            .text(wind[0] + ' m/s')
+            .text(wind_speed + ' m/s')
             .attr("transform", "translate(0, " + pressureScale(data[i].pressure) + ")");
 
     }

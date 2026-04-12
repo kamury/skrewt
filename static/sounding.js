@@ -106,29 +106,148 @@ const proceesGeoJson = (geojson) => {
 const drawGraphics = (svg, dict, pressureScale, stratificationLine, dewpointLine) => {
 
     loadData("static/data/Skew.csv")
-        .then(function(geojson) { 
+        .then(function(full_data) { 
 
-        let full_data = [];
+        if (!Object.keys(full_data).length) {
+            alert("Пока нет данных! Возможно, погоду на этом споте давно никто не смотрел. Заходите через пару минут, и они появятся!")
+        }
 
-        //let full_data = data
+        let data = full_data['data']
+        let dates = full_data['dates']
+
+        console.log(dates)
+        console.log(full_data)
 
         //full_data.push(proceesGeoJson(geojson));
-        full_data.push(geojson);
+        //full_data.push(geojson);
 
-        console.log(33333, full_data);
+        //console.log(33333, full_data);
 
-        render(full_data, 0, svg, dict, pressureScale, stratificationLine, dewpointLine);
+        //render(data, 0, svg, dict, pressureScale, stratificationLine, dewpointLine);
 
-        //крутилка
+        // Создаем метки на слайдере (каждую вторую)
+    const slider = document.getElementById('timeSlider');
+    const sliderLabels = document.getElementById('sliderLabels');
+    const tooltip = document.getElementById('tooltip');
+    const selectedDateSpan = document.getElementById('selectedDate');
+
+    // Форматирование даты
+    function formatDate(dateStr) {
+        const d = new Date(dateStr);
+        return `${d.getDate()}.${d.getMonth()+1} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+    }
+
+    // Размещаем метки
+    dates.forEach((date, index) => {
+        // Показываем каждую вторую метку для читаемости
+        if (index % 2 === 0) {
+            const label = document.createElement('div');
+            label.className = 'slider-label';
+            label.textContent = formatDate(date);
+            label.style.left = `${(index / (dates.length - 1)) * 100}%`;
+            label.title = date; // полная дата в подсказке
+            
+            // Клик по метке
+            label.addEventListener('click', () => {
+                const percent = (index / (dates.length - 1)) * 100;
+                slider.value = percent;
+                //updateSelectedDate(index);
+                render(data, dates[index], svg, dict, pressureScale, stratificationLine, dewpointLine);
+            });
+            
+            sliderLabels.appendChild(label);
+        }
+
+    });
+
+    // Поиск ближайшего индекса по проценту
+    function findClosestIndex(percent) {
+        let closestIndex = 0;
+        let minDiff = Infinity;
+        
+        dates.forEach((_, index) => {
+            const labelPercent = (index / (dates.length - 1)) * 100;
+            const diff = Math.abs(labelPercent - percent);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestIndex = index;
+            }
+        });
+        
+        return closestIndex;
+    }
+
+    // Обработка движения мыши для подсказки
+    slider.addEventListener('mousemove', (e) => {
+        const rect = slider.getBoundingClientRect();
+        const percent = ((e.clientX - rect.left) / rect.width) * 100;
+        const clampedPercent = Math.min(Math.max(percent, 0), 100);
+        
+        const index = findClosestIndex(clampedPercent);
+        const date = dates[index];
+        
+        // Позиционируем подсказку
+        tooltip.style.display = 'block';
+        tooltip.textContent = formatDate(date);
+        
+        // Вычисляем позицию подсказки
+        const labelPercent = (index / (dates.length - 1)) * 100;
+        tooltip.style.left = `${labelPercent}%`;
+        tooltip.style.bottom = '35px';
+        tooltip.style.transform = 'translateX(-50%)';
+    });
+
+    slider.addEventListener('mouseleave', () => {
+        tooltip.style.display = 'none';
+    });
+
+    // При перемещении слайдера
+    slider.addEventListener('input', (e) => {
+        const percent = parseFloat(e.target.value);
+        const index = findClosestIndex(percent);
+        const date = dates[index];
+        
+        //updateSelectedDate(index);
+        render(data, dates[index], svg, dict, pressureScale, stratificationLine, dewpointLine);
+        
+        // Подсвечиваем активную метку
+        document.querySelectorAll('.slider-label').forEach((label, i) => {
+            const labelIndex = i * 2; // так как показываем каждую вторую
+            if (labelIndex === index) {
+                label.style.background = '#667eea';
+                label.style.color = 'white';
+            } else {
+                label.style.background = '';
+                label.style.color = '#666';
+            }
+        });
+    });
+
+
+     /*   //крутилка
         d3.select("#timeRange")
             .attr("type", "range")
             .attr("min", 0)
-            .attr("max", 4)
+            .attr("max", dates.length - 1)
             .attr("value", 0)
             .on("input", function(v) {
-                console.log(v.target.value)
-                render(full_data, v.target.value, svg, dict, pressureScale, stratificationLine, dewpointLine);
+                console.log(v.target.value, dates[v.target.value])
+                render(data, dates[v.target.value], svg, dict, pressureScale, stratificationLine, dewpointLine);
             });
+
+            const sliderLabels = document.getElementById("slider-labels");
+
+            dates.forEach((point, index) => {
+                if (index % 2 === 0) { // Показываем каждую вторую точку для читаемости
+                    const label = document.createElement("span");
+                    label.textContent = `${point}`;
+                    label.style.position = "relative";
+                    label.style.left = `${(index / (dates.length - 1)) * 100}%`;
+                    label.style.transform = "translateX(-50%)";
+                    sliderLabels.appendChild(label);
+                }
+            });*/
+
         });
 
    /* 
