@@ -21,7 +21,7 @@ api_bp = Blueprint('api', __name__, url_prefix='/api')
 # Эндпоинт для получения данных
 @api_bp.route('/file', methods=['GET'])
 def read_file():
-    grbs = pygrib.open('static/data/crane_no_planetary.anl')
+    grbs = pygrib.open('static/data/bir.anl')
 
     print("Все доступные поля в файле crane_no_planetary:")
     for i, grb in enumerate(grbs):

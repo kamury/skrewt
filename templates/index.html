@@ -88,6 +88,29 @@
         }
   }
   
+  /* Точки на треке (псевдоэлемент) */
+
+.slider-track-markers {
+    position: absolute;      /* Добавь */
+    top: 50%;                /* Добавь — центрируем */
+    left: 0;                 /* Добавь */
+    right: 0;                /* Добавь */
+    transform: translateY(-50%);  /* Добавь — точное выравнивание */
+    pointer-events: none;    /* Добавь, чтобы кликать сквозь точки */
+    width: 100%;             /* Оставь или убери, если есть left/right */
+}
+
+.track-marker {
+    position: absolute;
+    width: 6px;
+    height: 16px;
+    background: black;
+    border-radius: 50%;
+    transform: translateX(-50%);  /* Убери translateY, если он есть */
+    /* Если точки всё ещё ниже, добавь: */
+    top: -38px;   /* Подними вручную */
+}
+
 
     </style>
 </head>
@@ -106,6 +129,7 @@
         <input type="range" id="timeSlider" min="0" max="100" step="0.1" value="0">
         <div class="slider-labels" id="sliderLabels"></div>
         <div id="tooltip" class="tooltip" style="display: none;"></div>
+        <div class="slider-track-markers" id="trackMarkers"></div>
     </div>
 
 

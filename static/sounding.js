@@ -23,8 +23,8 @@ const loadData = (url) => {
     });*/
 }
 
-const render = (data, i, svg, dict, pressureScale, stratificationLine, dewpointLine) => {
-    //console.log(i, data); 
+const render = (data, i, svg, dict, heightScale, stratificationLine, dewpointLine) => {
+    console.log(i, data); 
 
     /*let pressure = [];
     let winvU = [];
@@ -45,7 +45,7 @@ const render = (data, i, svg, dict, pressureScale, stratificationLine, dewpointL
     }*/
    console.log(data, i, data[i]);
 
-    drawWind(data[i], dict, pressureScale);
+    drawWind(data[i], dict, heightScale);
 
 
     svg.selectAll(".stratificationLine").remove();
@@ -63,7 +63,7 @@ const render = (data, i, svg, dict, pressureScale, stratificationLine, dewpointL
         .datum(data[i])
         .attr("fill", "none")
         .attr("class", "dewpointLine")
-        .attr("stroke", "steelblue")
+        .attr("stroke", "green")
         .attr("stroke-width", 2)
         .attr("d", dewpointLine);
 }
@@ -103,10 +103,10 @@ const proceesGeoJson = (geojson) => {
     
 }
 
-const drawGraphics = (svg, dict, pressureScale, stratificationLine, dewpointLine) => {
+const drawGraphics = (svg, dict, heightScale, stratificationLine, dewpointLine) => {
 
     loadData("static/data/Skew.csv")
-        .then(function(full_data) { 
+        .then(function(full_data) { console.log(full_data)
 
         if (!Object.keys(full_data).length) {
             alert("Пока нет данных! Возможно, погоду на этом споте давно никто не смотрел. Заходите через пару минут, и они появятся!")
@@ -117,6 +117,8 @@ const drawGraphics = (svg, dict, pressureScale, stratificationLine, dewpointLine
 
         console.log(dates)
         console.log(full_data)
+
+        render(data, dates[0], svg, dict, heightScale, stratificationLine, dewpointLine);
 
         //full_data.push(proceesGeoJson(geojson));
         //full_data.push(geojson);
@@ -139,6 +141,13 @@ const drawGraphics = (svg, dict, pressureScale, stratificationLine, dewpointLine
 
     // Размещаем метки
     dates.forEach((date, index) => {
+        //черные метки
+        const trackMarkers = document.getElementById('trackMarkers');
+	    const marker = document.createElement('div');
+        marker.className = 'track-marker';
+        marker.style.left = `${(index / (dates.length - 1)) * 100}%`;
+        trackMarkers.appendChild(marker);
+
         // Показываем каждую вторую метку для читаемости
         if (index % 2 === 0) {
             const label = document.createElement('div');
@@ -152,7 +161,7 @@ const drawGraphics = (svg, dict, pressureScale, stratificationLine, dewpointLine
                 const percent = (index / (dates.length - 1)) * 100;
                 slider.value = percent;
                 //updateSelectedDate(index);
-                render(data, dates[index], svg, dict, pressureScale, stratificationLine, dewpointLine);
+                render(data, dates[index], svg, dict, heightScale, stratificationLine, dewpointLine);
             });
             
             sliderLabels.appendChild(label);
@@ -208,7 +217,7 @@ const drawGraphics = (svg, dict, pressureScale, stratificationLine, dewpointLine
         const date = dates[index];
         
         //updateSelectedDate(index);
-        render(data, dates[index], svg, dict, pressureScale, stratificationLine, dewpointLine);
+        render(data, dates[index], svg, dict, heightScale, stratificationLine, dewpointLine);
         
         // Подсвечиваем активную метку
         document.querySelectorAll('.slider-label').forEach((label, i) => {

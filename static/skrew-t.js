@@ -3,8 +3,10 @@ const currentUrl = window.location.href;
 const url = new URL(currentUrl);
 const highScale = url.searchParams.get('scale')
 
-let pressure_top = 100;
-let pressure_base = 1050;
+//let pressure_top = 100;
+//let pressure_base = 1050;
+let height_top = 15000;
+let height_base = 0;
 let temp_base = -40;
 let temp_top = 60;
 
@@ -18,11 +20,13 @@ if (highScale) {
 }
 
 if (highScale == 3500) {
-    pressure_top = 700;
+    //pressure_top = 700;
+    height_top = 3500
     temp_base = 15;
     temp_top = 40;
 } else if (highScale == 6000) {
-    pressure_top = 450;
+    //pressure_top = 450;
+    height_top = 6000
     temp_base = 0;
     temp_top = 40;
 }
@@ -43,8 +47,8 @@ const dict = {
     "highScale": highScale,
     "width": width,
     "height": height,
-    "pressure_top": pressure_top,
-    "pressure_base": pressure_base,
+    "height_top": height_top,
+    "height_base": height_base,
     "temp_base": temp_base,
     "temp_top": temp_top,
     "tan": tan,
@@ -59,8 +63,8 @@ const svg = d3.select("#skewt-container")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
 // Log scale for pressure (OY)
-const pressureScale = d3.scaleLog()
-    .domain([pressure_base, pressure_top])  // От 1050 гПа до 100 гПа
+const heightScale = d3.scaleLinear()  //d3.scaleLog()
+    .domain([height_base, height_top])  // От 1050 гПа до 100 гПа
     .range([height, 0]);
 
 // Temp scale (OX)
@@ -70,7 +74,7 @@ const tempScale = d3.scaleLinear()
 
 // Pressure axis (logariphmic)
 svg.append("g")
-    .call(d3.axisLeft(pressureScale).tickFormat(d => `${d} гПа`))
+    .call(d3.axisLeft(heightScale).tickFormat(d => `${d} м`))
     //pressure lines
     .call(g => g.selectAll(".tick line").clone()
           .attr("x2", width)
@@ -90,7 +94,7 @@ var tan = (tempScale(temp_base) - tempScale(temp_top))/(pressureScale(pressure_t
 
 console.log(tan);*/
 
-drawGrid(svg, dict, pressureScale, tempScale)
+drawGrid(svg, dict, heightScale, tempScale)
 
 
 // Declare the line generator.
@@ -107,23 +111,23 @@ drawGrid(svg, dict, pressureScale, tempScale)
     const stratificationLine = d3.line()
     .x(d => {
         //console.log(d.temp - 273.15, tempScale(d.temp - 273.15));
-        return (tempScale(d.temp - tempK) + (pressureScale(pressure_base)-pressureScale(d.pressure))/tan);
-        //return tempScale(d.temp - 273.15);
-        //return skewPoint(d)[0]; //tempScale(d.temp - 273.15);
+        //return (tempScale(d.temp - tempK));
+        return (tempScale(d.temp - tempK) + (heightScale(height_base)-heightScale(d.height))/tan);
     })
     .y(d => {
         //console.log(d.pressure, pressureScale(d.pressure));
-        return pressureScale(d.pressure);
+        return heightScale(d.height);
         //return skewPoint(d)[1]//pressureScale(d.pressure);
     });
 
     const dewpointLine = d3.line()
     .x(d => {
         //return tempScale(d.dewpoint - 273.15);
-        return (tempScale(d.dewpoint - tempK) + (pressureScale(pressure_base)-pressureScale(d.pressure))/tan);
+        return (tempScale(d.dewpoint - tempK) + (heightScale(height_base)-heightScale(d.height))/tan);
     })
     .y(d => {
-        return pressureScale(d.pressure);
+        return heightScale(d.height);
     });
 
-drawGraphics(svg, dict, pressureScale, stratificationLine, dewpointLine);
+console.log(123);
+drawGraphics(svg, dict, heightScale, stratificationLine, dewpointLine);

@@ -1,4 +1,183 @@
-const drawWind = (data, dict, pressureScale) => {
+const drawWind = (data, dict, heightScale) => {
+    // === НАСТРОЙКИ ===
+    const windPanelOffset = 80;
+    const arrowLength = 18;
+    const levelStep = 1;
+
+    // === ФУНКЦИИ ===
+    function windSpeed(u, v) {
+    return Math.sqrt(u * u + v * v);
+    }
+
+    function windDirection(u, v) {
+    let dir = Math.atan2(-u, -v) * 180 / Math.PI;
+    if (dir < 0) dir += 360;
+    return dir;
+    }
+
+    function degToCompass(deg) {
+    if (deg >= 348.75 || deg < 11.25) return "с";
+    if (deg < 33.75) return "ссв";
+    if (deg < 56.25) return "св";
+    if (deg < 78.75) return "всв";
+    if (deg < 101.25) return "в";
+    if (deg < 123.75) return "вюв";
+    if (deg < 146.25) return "юв";
+    if (deg < 168.75) return "ююв";
+    if (deg < 191.25) return "ю";
+    if (deg < 213.75) return "ююз";
+    if (deg < 236.25) return "юз";
+    if (deg < 258.75) return "зюз";
+    if (deg < 281.25) return "з";
+    if (deg < 303.75) return "зсз";
+    if (deg < 326.25) return "сз";
+    return "ссз";
+    }
+
+    d3.select("#wind-container").selectAll("*").remove();
+
+    const svg = d3.select("#wind-container")
+        .append('svg')
+        .attr("width", 400)
+        .attr("height", dict.height + 80);
+
+    svg.selectAll("*").remove();
+
+    // === ЦВЕТОВАЯ ШКАЛА ===
+    const maxWind = d3.max(data, d => windSpeed(d.wind_u, d.wind_v));
+
+    const windColor = d3.scaleSequential()
+    .domain([0, maxWind])
+    .interpolator(d3.interpolateTurbo); // можно заменить на interpolateViridis
+
+    // === SVG ГРУППА ===
+    const windGroup = svg.append("g")
+        .attr("class", "wind-panel");
+
+    let width = 300
+    let height = dict.height
+    const panelX = width + windPanelOffset;
+
+    // линия панели
+    windGroup.append("line")
+    .attr("x1", panelX)
+    .attr("x2", panelX)
+    .attr("y1", 0)
+    .attr("y2", height)
+    .attr("stroke", "#aaa")
+    .attr("stroke-dasharray", "3,3");
+
+    // === СТРЕЛКИ ===
+    data
+    .filter((d, i) => i % levelStep === 0)
+    .filter(d => d.wind_u !== null)
+    .forEach(d => {
+        const y = heightScale(d.height);
+
+        const speed = windSpeed(d.wind_u, d.wind_v);
+        const dir = windDirection(d.wind_u, d.wind_v);
+        const compass = degToCompass(dir);
+
+        const color = windColor(speed);
+
+        const angle = (dir - 180) * Math.PI / 180;
+
+        const x1 = panelX;
+        const y1 = y;
+
+        const x2 = x1 + arrowLength * Math.sin(angle);
+        const y2 = y1 + arrowLength * Math.cos(angle);
+
+        // линия
+        windGroup.append("line")
+        .attr("x1", x1)
+        .attr("y1", y1)
+        .attr("x2", x2)
+        .attr("y2", y2)
+        .attr("stroke", color)
+        .attr("stroke-width", 1.5)
+        .attr("stroke-linecap", "round");
+
+        // наконечник
+        const headSize = 5;
+
+        windGroup.append("line")
+        .attr("x1", x2)
+        .attr("y1", y2)
+        .attr("x2", x2 - headSize * Math.sin(angle - Math.PI / 6))
+        .attr("y2", y2 - headSize * Math.cos(angle - Math.PI / 6))
+        .attr("stroke", color)
+        .attr("stroke-width", 1.5);
+
+        windGroup.append("line")
+        .attr("x1", x2)
+        .attr("y1", y2)
+        .attr("x2", x2 - headSize * Math.sin(angle + Math.PI / 6))
+        .attr("y2", y2 - headSize * Math.cos(angle + Math.PI / 6))
+        .attr("stroke", color)
+        .attr("stroke-width", 1.5);
+
+        // точка
+        windGroup.append("circle")
+        .attr("cx", x1)
+        .attr("cy", y1)
+        .attr("r", 2)
+        .attr("fill", color);
+
+        // подпись
+        windGroup.append("text")
+        .attr("x", panelX + 28)
+        .attr("y", y1 + 3)
+        .text(`${speed.toFixed(1)} м/с ${compass}`)
+        .attr("font-size", "10px")
+        .attr("fill", color);
+    });
+
+    // === ЛЕГЕНДА ===
+    const legendHeight = 150;
+    const legendY = 20;
+
+    const legendScale = d3.scaleLinear()
+    .domain([0, maxWind])
+    .range([legendHeight, 0]);
+
+    const legend = svg.append("g")
+    .attr("transform", `translate(${panelX + 120}, ${legendY})`);
+
+    // градиент
+    const defs = svg.append("defs");
+
+    const gradient = defs.append("linearGradient")
+    .attr("id", "wind-gradient")
+    .attr("x1", "0%")
+    .attr("y1", "100%")
+    .attr("x2", "0%")
+    .attr("y2", "0%");
+
+    d3.range(0, 1.01, 0.1).forEach(t => {
+    gradient.append("stop")
+        .attr("offset", `${t * 100}%`)
+        .attr("stop-color", windColor(t * maxWind));
+    });
+
+    // прямоугольник легенды
+    legend.append("rect")
+    .attr("width", 10)
+    .attr("height", legendHeight)
+    .style("fill", "url(#wind-gradient)");
+
+    // ось легенды
+    legend.append("g")
+    .attr("transform", "translate(10,0)")
+    .call(d3.axisRight(legendScale).ticks(5))
+    .append("text")
+    .attr("fill", "#000")
+    .attr("x", 0)
+    .attr("y", -5)
+    .text("м/с");
+}
+
+const drawWind2 = (data, dict, heightScale) => {
     
     const uvToWind = (u, v) => {
         var angle = Math.atan2(u, v);

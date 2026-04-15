@@ -1,17 +1,50 @@
-const drawGrid = (svg, dict, pressureScale, tempScale) => {
+const drawGrid = (svg, dict, heightScale, tempScale) => {
 
     //isoterms
     svg.selectAll("temp")
         .data(d3.range(-100, 43, ((dict.highScale == 12000) ? 10 : (dict.highScale == 6000) ? 5 : 3)))
         .enter()
             .append("line")
-            .attr("x1", d => tempScale(d)-0.5 + (pressureScale(dict.pressure_base)-pressureScale(dict.pressure_top))/dict.tan)
+            .attr("x1", d => tempScale(d)-0.5 + (heightScale(dict.height_base)-heightScale(dict.height_top))/dict.tan)
             .attr("x2", d => tempScale(d)-0.5)
             .attr("y1", 0)
             .attr("y2", dict.height)
             .attr("class", function(d) { if (d == 0) { return "tempzero"; } else { return "isoterm"}});
 
 
+/*
+    //вариант изотерм от gpt, x = x + skrew * y, y = y.
+    const skew = -0.5;
+
+    function project(T, h) {
+        return [
+            tempScale(T) + skew * heightScale(h),
+            heightScale(h)
+        ];
+    }
+
+    function drawIsotherm(T) {
+        const heights = d3.range(dict.height_base, dict.height_top, 100);
+        
+        const line = d3.line()
+            .x(h => project(T, h)[0])
+            .y(h => project(T, h)[1]);
+
+        svg.append("path")
+            .datum(heights)
+            .attr("d", line)
+            .attr("class", T === 0 ? "tempzero" : "isoterm");
+        }
+
+    const temps = d3.range(
+            -100,
+            90,
+            (dict.highScale == 12000) ? 10 : (dict.highScale == 6000) ? 5 : 3
+    );
+          
+    temps.forEach(T => drawIsotherm(T));
+*/
+/*
     //dry adiabates
     var dryline = d3.line()
         .x(function(d,i) { 
@@ -37,7 +70,7 @@ const drawGrid = (svg, dict, pressureScale, tempScale) => {
         .data(dryData)
     .enter().append("path")
         .attr("class", "dry-adiabat")
-        .attr("d", dryline);
+        .attr("d", dryline);*/
 
     //moist adiabat
     const Cp = 1.03e3;
@@ -80,20 +113,20 @@ const drawGrid = (svg, dict, pressureScale, tempScale) => {
     }
 
     const wetAdiabatGradient = (pressure, temp, S) => {
-    const K = 0.286;
-    const L = 2.5e6;
-    const MA = 300.0;
-    const RV = 461.0;
+        const K = 0.286;
+        const L = 2.5e6;
+        const MA = 300.0;
+        const RV = 461.0;
 
-    temp += 273.15;
-    let lsbc = (L / RV) * ((1.0 / dict.tempK) - (1.0 / temp));
-    let rw = 6.11 * Math.exp(lsbc) * (0.622 / pressure);
-    let lrwbt = (L * rw) / (S.Rd * temp);
-    let nume = ((S.Rd * temp) / (S.Cp * pressure)) * (1.0 + lrwbt);
-    let deno = 1.0 + (lrwbt * ((0.622 * L) / (S.Cp * temp)));
-    let gradi = nume / deno;
+        temp += 273.15;
+        let lsbc = (L / RV) * ((1.0 / dict.tempK) - (1.0 / temp));
+        let rw = 6.11 * Math.exp(lsbc) * (0.622 / pressure);
+        let lrwbt = (L * rw) / (S.Rd * temp);
+        let nume = ((S.Rd * temp) / (S.Cp * pressure)) * (1.0 + lrwbt);
+        let deno = 1.0 + (lrwbt * ((0.622 * L) / (S.Cp * temp)));
+        let gradi = nume / deno;
 
-    return S.Dp * gradi;
+        return S.Dp * gradi;
     }
 
     const drawMoistAdiabat = (temp, S) => {
