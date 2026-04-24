@@ -3,6 +3,7 @@ import pygrib
 import math
 import numpy as np
 import config, db
+import models
 from routes.api import api_bp
 
 name = 'main'
@@ -17,7 +18,14 @@ app.register_blueprint(api_bp)
 
 @app.route('/')
 def index():
-  return render_template('index.html')
+  #по умолчанию, показываем диаграмму для Журавлей
+  return soundingForSpot(1)
+
+@app.route('/<int:spot_id>')
+def soundingForSpot(spot_id):
+  spot = models.get_spot_by_id(spot_id)
+  models.get_all_spots()
+  return render_template('index.html', spot = spot)
 
 if name == 'main':
   app.run(debug=True)

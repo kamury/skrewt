@@ -1,45 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Skew-T Log-P Diagram (D3.js)</title>
-    <script src="{{ url_for('static', filename='d3.v7.min.js')}}"></script>
-    <link rel="stylesheet" href="static/styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Аэрологическая диаграмма. Бир.</title>
+    <script src="{{ url_for('static', filename='js/d3.v7.min.js')}}"></script>
+    <link rel="stylesheet" href="static/css/slider.css">
+    <link rel="stylesheet" href="static/css/page.css">
     <style>
-        body { font-family: Arial; margin: 20px; }
-        svg { background: #f5f5f5; }
-        /*.grid-line { stroke: #ddd; stroke-width: 0.5; }*/
-        .pressureLines { stroke: #555; stroke-dasharray: 2,2; }
-        .isoterm { stroke: #a96d42; stroke-width: 0.5px; fill: none; }
-        .dry-adiabat { stroke: #c21134; stroke-width: 0.5px; fill: none; }  /* Коричневый */
-        .moist-adiabat { stroke: #1e90ff; stroke-width: 0.5px; fill: none; } /* Синий */
-        .mixing-ratio { stroke: #32cd32; }  /* Зелёный */
+        svg { background: #ffffff; }
+            /*.grid-line { stroke: #ddd; stroke-width: 0.5; }*/
+            .pressureLines { stroke: #555; stroke-dasharray: 2,2; }
+            .isoterm { stroke: #a96d42; stroke-width: 0.5px; fill: none; }
+            .dry-adiabat { stroke: #c21134; stroke-width: 0.5px; fill: none; }  /* Коричневый */
+            .moist-adiabat { stroke: #1e90ff; stroke-dasharray: 5,5; stroke-width: 0.5px; fill: none; } /* Синий */
+            .mixing-ratio { stroke: #32cd32; }  /* Зелёный */
 
         .gridline, .tempzero {
-            stroke: #805f48;
+            stroke: #0a0a09;
             stroke-width: 0.5px;
             fill: none;
         }
         .tempzero { stroke: #aaa; stroke-width: 1.25px; }
-
-        .highScale {
-            padding: 10px;
-            font-size: 12px;
-            background-color: #aaa; 
-            display: inline;
-        }
-
-        .highScale:hover {
-            border-top:#df823f solid 5px;
-        }
-
-        .highScaleSel {
-            border-top:#df823f solid 5px;
-            padding: 10px;
-            font-size: 12px;
-            background-color: #5e5e5e; 
-            display: inline;
-        }
 
         .arrow {
             fill: none;
@@ -115,24 +97,56 @@
     </style>
 </head>
 <body>
-    <div>
-        <div id="s3500" class="highScale"><a href="/?scale=3500">3500 m</a></div>
-        <div id="s6000" class="highScale"><a href="/?scale=6000">6000 m</a></div>
-        <div id="s12000" class="highScale"><a href="/?scale=12000">12000 m</a></div>
+    <div class="diagram-card">
+        <!-- Верхний блок: заголовок + кнопка выбора спота -->
+        <div class="header">
+            <div class="title-section">
+                <h1>Аэрологическая диаграмма. {{ spot.title }}</h1>
+                <div class="sub">
+                    <span>📡 GFS, данные от 0 часов 05.03.2026</span>
+                </div>
+            </div>
+            <div class="spot-btn-wrapper" id="spotWrapper">
+                <button class="spot-button" id="spotToggleBtn" aria-label="Выбрать спот">
+                    <span class="spot-icon">📍</span> Выбрать спот
+                    <span style="font-size:1rem;">⌵</span>
+                </button>
+                <!-- выпадающий список спотов -->
+                <div class="spots-dropdown" id="spotsDropdown">
+                    <ul class="spots-list" id="spotsList">
+                        <!-- 10 спотов со ссылками будут вставлены через JS -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        {% set current_scale = request.args.get('scale', '12000') %}
+    
+        <!-- Панель с тремя высотами -->
+        <div class="heights-panel">
+            <a href="/?scale=3500" class="height-btn {% if current_scale == '3500' %}active{% endif %}">3,5 км</a>
+            <a href="/?scale=6000" class="height-btn {% if current_scale == '6000' %}active{% endif %}">6 км</a>
+            <a href="/?scale=12000" class="height-btn {% if current_scale == '12000' %}active{% endif %}" data-height="12000">12 км</a>
+        </div>
+
+        <div class="text-blocks">
+        
+            <div id="skewt-container" style="display: inline-block;"></div>
+            <script type="module" src="{{ url_for('static', filename='js/skrew-t.js')}}"></script>
+
+            <div id="wind-container" style="display: inline-block"></div>
+        </div>
+
+        <div class="container">
+            <div class="slider-wrapper">
+                <input type="range" id="timeSlider" min="0" max="100" step="0.1" value="0">
+                <div class="slider-labels" id="sliderLabels"></div>
+                <div id="tooltip" class="tooltip" style="display: none;"></div>
+                <div class="slider-track-markers" id="trackMarkers"></div>
+            </div>
+        </div>
+        
     </div>
-    <div id="skewt-container" style="display: inline-block;"></div>
-    <script type="module" src="{{ url_for('static', filename='skrew-t.js')}}"></script>
-
-    <div id="wind-container" style="display: inline-block"></div>
-
-    <div class="slider-wrapper">
-        <input type="range" id="timeSlider" min="0" max="100" step="0.1" value="0">
-        <div class="slider-labels" id="sliderLabels"></div>
-        <div id="tooltip" class="tooltip" style="display: none;"></div>
-        <div class="slider-track-markers" id="trackMarkers"></div>
-    </div>
-
-
 
     <!--<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

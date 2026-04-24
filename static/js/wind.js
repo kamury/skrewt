@@ -1,37 +1,37 @@
 const drawWind = (data, dict, heightScale) => {
     // === НАСТРОЙКИ ===
-    const windPanelOffset = 80;
+    const windPanelOffset = 30;
     const arrowLength = 18;
     const levelStep = 1;
 
     // === ФУНКЦИИ ===
     function windSpeed(u, v) {
-    return Math.sqrt(u * u + v * v);
+        return Math.sqrt(u * u + v * v);
     }
 
     function windDirection(u, v) {
-    let dir = Math.atan2(-u, -v) * 180 / Math.PI;
-    if (dir < 0) dir += 360;
-    return dir;
+        let dir = Math.atan2(-u, -v) * 180 / Math.PI;
+        if (dir < 0) dir += 360;
+        return dir;
     }
 
     function degToCompass(deg) {
-    if (deg >= 348.75 || deg < 11.25) return "с";
-    if (deg < 33.75) return "ссв";
-    if (deg < 56.25) return "св";
-    if (deg < 78.75) return "всв";
-    if (deg < 101.25) return "в";
-    if (deg < 123.75) return "вюв";
-    if (deg < 146.25) return "юв";
-    if (deg < 168.75) return "ююв";
-    if (deg < 191.25) return "ю";
-    if (deg < 213.75) return "ююз";
-    if (deg < 236.25) return "юз";
-    if (deg < 258.75) return "зюз";
-    if (deg < 281.25) return "з";
-    if (deg < 303.75) return "зсз";
-    if (deg < 326.25) return "сз";
-    return "ссз";
+        if (deg >= 348.75 || deg < 11.25) return "с";
+        if (deg < 33.75) return "ссв";
+        if (deg < 56.25) return "св";
+        if (deg < 78.75) return "всв";
+        if (deg < 101.25) return "в";
+        if (deg < 123.75) return "вюв";
+        if (deg < 146.25) return "юв";
+        if (deg < 168.75) return "ююв";
+        if (deg < 191.25) return "ю";
+        if (deg < 213.75) return "ююз";
+        if (deg < 236.25) return "юз";
+        if (deg < 258.75) return "зюз";
+        if (deg < 281.25) return "з";
+        if (deg < 303.75) return "зсз";
+        if (deg < 326.25) return "сз";
+        return "ссз";
     }
 
     d3.select("#wind-container").selectAll("*").remove();
@@ -39,7 +39,7 @@ const drawWind = (data, dict, heightScale) => {
     const svg = d3.select("#wind-container")
         .append('svg')
         .attr("width", 400)
-        .attr("height", dict.height + 80);
+        .attr("height", dict.height+80);
 
     svg.selectAll("*").remove();
 
@@ -47,32 +47,32 @@ const drawWind = (data, dict, heightScale) => {
     const maxWind = d3.max(data, d => windSpeed(d.wind_u, d.wind_v));
 
     const windColor = d3.scaleSequential()
-    .domain([0, maxWind])
-    .interpolator(d3.interpolateTurbo); // можно заменить на interpolateViridis
+        .domain([0, maxWind])
+        .interpolator(d3.interpolateTurbo); // можно заменить на interpolateViridis
 
     // === SVG ГРУППА ===
     const windGroup = svg.append("g")
         .attr("class", "wind-panel");
 
-    let width = 300
+    let width = 10
     let height = dict.height
     const panelX = width + windPanelOffset;
 
     // линия панели
     windGroup.append("line")
-    .attr("x1", panelX)
-    .attr("x2", panelX)
-    .attr("y1", 0)
-    .attr("y2", height)
-    .attr("stroke", "#aaa")
-    .attr("stroke-dasharray", "3,3");
+        .attr("x1", panelX)
+        .attr("x2", panelX)
+        .attr("y1", 0)
+        .attr("y2", height)
+        .attr("stroke", "#aaa")
+        .attr("stroke-dasharray", "3,3");
 
     // === СТРЕЛКИ ===
     data
     .filter((d, i) => i % levelStep === 0)
     .filter(d => d.wind_u !== null)
     .forEach(d => {
-        const y = heightScale(d.height);
+        const y = heightScale(d.height) + 30;
 
         const speed = windSpeed(d.wind_u, d.wind_v);
         const dir = windDirection(d.wind_u, d.wind_v);
@@ -90,13 +90,13 @@ const drawWind = (data, dict, heightScale) => {
 
         // линия
         windGroup.append("line")
-        .attr("x1", x1)
-        .attr("y1", y1)
-        .attr("x2", x2)
-        .attr("y2", y2)
-        .attr("stroke", color)
-        .attr("stroke-width", 1.5)
-        .attr("stroke-linecap", "round");
+            .attr("x1", x1)
+            .attr("y1", y1)
+            .attr("x2", x2)
+            .attr("y2", y2)
+            .attr("stroke", color)
+            .attr("stroke-width", 1.5)
+            .attr("stroke-linecap", "round");
 
         // наконечник
         const headSize = 5;

@@ -29,14 +29,14 @@ def get_actual_sounding_data(spot_id):
         print(1111, last_request_datetime, utc_now)
         #если есть свежие данные
         #if ((utc_now - request_datetime) < timedelta(hours=10)):
-        if ((utc_now - last_request_datetime) < timedelta(hours=116)):
+        if ((utc_now - last_request_datetime) < timedelta(hours=216)):
             index = hours.index(result['request_time'])
             if index:
                 prev_request_time = hours[index - 1]
                 prev_request_date = result['request_date']      
             else:
                 prev_request_time = 18
-                prev_request_date = request_datetime.date() - timedelta(days=1)
+                prev_request_date = last_request_datetime.date() - timedelta(days=1)
 
             datetime_limit = f'{result['datetime'].date()} 00:00:00'
 

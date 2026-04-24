@@ -24,27 +24,6 @@ const loadData = (url) => {
 }
 
 const render = (data, i, svg, dict, heightScale, stratificationLine, dewpointLine) => {
-    console.log(i, data); 
-
-    /*let pressure = [];
-    let winvU = [];
-    let windV = [];
-    for (let index in data[i]) {
-
-        //console.log(data[i][index]); 
-
-        pressure.push(data[i][index].pressure);
-        winvU.push(data[i][index].wind_u);
-        windV.push(data[i][index].wind_v);
-    }
-
-    let b_data = {
-        pressure: pressure,
-        wind_u: winvU,
-        wind_v: windV
-    }*/
-   console.log(data, i, data[i]);
-
     drawWind(data[i], dict, heightScale);
 
 
@@ -312,4 +291,4 @@ const drawGraphics = (svg, dict, heightScale, stratificationLine, dewpointLine) 
     })  */  
 }
 
-export { drawGraphics }
+export { loadData, drawGraphics }
