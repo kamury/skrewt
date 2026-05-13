@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Аэрологическая диаграмма. Бир.</title>
+    <title>Аэрологическая диаграмма. {{ spot.title }}.</title>
     <script src="{{ url_for('static', filename='js/d3.v7.min.js')}}"></script>
-    <link rel="stylesheet" href="static/css/slider.css">
-    <link rel="stylesheet" href="static/css/page.css">
+    <link rel="stylesheet" href="/static/css/slider.css">
+    <link rel="stylesheet" href="/static/css/page.css">
+    <link rel="stylesheet" href="/templates/">
     <style>
         svg { background: #ffffff; }
             /*.grid-line { stroke: #ddd; stroke-width: 0.5; }*/
@@ -14,6 +15,8 @@
             .isoterm { stroke: #a96d42; stroke-width: 0.5px; fill: none; }
             .dry-adiabat { stroke: #c21134; stroke-width: 0.5px; fill: none; }  /* Коричневый */
             .moist-adiabat { stroke: #1e90ff; stroke-dasharray: 5,5; stroke-width: 0.5px; fill: none; } /* Синий */
+            .state_grey {stroke: #888; stroke-width: 2px;}
+            .state_blue {stroke: #35FF; stroke-width: 3px;}
             .mixing-ratio { stroke: #32cd32; }  /* Зелёный */
 
         .gridline, .tempzero {
@@ -114,7 +117,11 @@
                 <!-- выпадающий список спотов -->
                 <div class="spots-dropdown" id="spotsDropdown">
                     <ul class="spots-list" id="spotsList">
-                        <!-- 10 спотов со ссылками будут вставлены через JS -->
+                        {% for spot in spot_list %}
+                            <li>
+                                <a href="/{{ spot.id }}" class="spot-link" data-url="/spot/{{ spot.id }}">{{ spot.title }}</a>
+                            </li>
+                        {% endfor %}
                     </ul>
                 </div>
             </div>
@@ -124,9 +131,9 @@
     
         <!-- Панель с тремя высотами -->
         <div class="heights-panel">
-            <a href="/?scale=3500" class="height-btn {% if current_scale == '3500' %}active{% endif %}">3,5 км</a>
-            <a href="/?scale=6000" class="height-btn {% if current_scale == '6000' %}active{% endif %}">6 км</a>
-            <a href="/?scale=12000" class="height-btn {% if current_scale == '12000' %}active{% endif %}" data-height="12000">12 км</a>
+            <a href="/{{ spot.id }}/?scale=3500" class="height-btn {% if current_scale == '3500' %}active{% endif %}">3,5 км</a>
+            <a href="/{{ spot.id }}/?scale=6000" class="height-btn {% if current_scale == '6000' %}active{% endif %}">6 км</a>
+            <a href="/{{ spot.id }}/?scale=12000" class="height-btn {% if current_scale == '12000' %}active{% endif %}" data-height="12000">12 км</a>
         </div>
 
         <div class="text-blocks">
@@ -147,6 +154,50 @@
         </div>
         
     </div>
+
+    <script>
+        // ---------- Логика выпадающего меню (открытие/закрытие) ----------
+       const spotToggleBtn = document.getElementById('spotToggleBtn');
+       const spotsDropdown = document.getElementById('spotsDropdown');
+
+       function closeDropdown() {
+           if (spotsDropdown) spotsDropdown.classList.remove('open');
+       }
+
+       function toggleDropdown(e) {
+           e.stopPropagation();
+           if (spotsDropdown.classList.contains('open')) {
+               closeDropdown();
+           } else {
+               spotsDropdown.classList.add('open');
+           }
+       }
+
+       // ---------- Логика выпадающего меню (открытие/закрытие) ----------
+       if (spotToggleBtn && spotsDropdown) {
+           spotToggleBtn.addEventListener('click', toggleDropdown);
+           // Клик вне области закрывает дропдаун
+           document.addEventListener('click', function(event) {
+               const wrapper = document.getElementById('spotWrapper');
+               if (wrapper && !wrapper.contains(event.target)) {
+                   closeDropdown();
+               }
+           });
+           // Не даем закрывать при клике внутри дропдауна, но ссылки должны работать
+           spotsDropdown.addEventListener('click', function(e) {
+               // Если клик по ссылке — разрешаем переход, дропдаун закроется после перехода
+               // но мы не должны закрывать мгновенно чтобы не мешать навигации. Однако эстетично.
+               // Но чтобы после клика дропдаун исчезал — добавим таймаут или сразу закроем, но т.к. страница может перегрузиться,
+               // просто закрываем без задержки. Для лучшего UX закроем перед переходом.
+               if (e.target.closest('.spot-link')) {
+                   // дадим возможность браузеру обработать переход, но дропдаун закроем
+                   closeDropdown();
+                   // не предотвращаем переход
+               }
+           });
+       }
+
+   </script>
 
     <!--<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

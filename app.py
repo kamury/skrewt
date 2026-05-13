@@ -24,8 +24,13 @@ def index():
 @app.route('/<int:spot_id>')
 def soundingForSpot(spot_id):
   spot = models.get_spot_by_id(spot_id)
+  spot_list = models.get_all_spots()
   models.get_all_spots()
-  return render_template('index.html', spot = spot)
+  return render_template('index.html', spot = spot, spot_list = spot_list)
+
+@app.route('/<int:spot_id>/')
+def soundingForSpotWithSlash(spot_id):
+    return soundingForSpot(spot_id)
 
 if name == 'main':
   app.run(debug=True)

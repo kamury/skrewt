@@ -38,17 +38,10 @@ const drawWind = (data, dict, heightScale) => {
 
     const svg = d3.select("#wind-container")
         .append('svg')
-        .attr("width", 400)
+        .attr("width", 200)
         .attr("height", dict.height+80);
 
     svg.selectAll("*").remove();
-
-    // === ЦВЕТОВАЯ ШКАЛА ===
-    const maxWind = d3.max(data, d => windSpeed(d.wind_u, d.wind_v));
-
-    const windColor = d3.scaleSequential()
-        .domain([0, maxWind])
-        .interpolator(d3.interpolateTurbo); // можно заменить на interpolateViridis
 
     // === SVG ГРУППА ===
     const windGroup = svg.append("g")
@@ -78,7 +71,7 @@ const drawWind = (data, dict, heightScale) => {
         const dir = windDirection(d.wind_u, d.wind_v);
         const compass = degToCompass(dir);
 
-        const color = windColor(speed);
+        const color = '#000000';
 
         const angle = (dir - 180) * Math.PI / 180;
 
@@ -132,49 +125,6 @@ const drawWind = (data, dict, heightScale) => {
         .attr("font-size", "10px")
         .attr("fill", color);
     });
-
-    // === ЛЕГЕНДА ===
-    const legendHeight = 150;
-    const legendY = 20;
-
-    const legendScale = d3.scaleLinear()
-    .domain([0, maxWind])
-    .range([legendHeight, 0]);
-
-    const legend = svg.append("g")
-    .attr("transform", `translate(${panelX + 120}, ${legendY})`);
-
-    // градиент
-    const defs = svg.append("defs");
-
-    const gradient = defs.append("linearGradient")
-    .attr("id", "wind-gradient")
-    .attr("x1", "0%")
-    .attr("y1", "100%")
-    .attr("x2", "0%")
-    .attr("y2", "0%");
-
-    d3.range(0, 1.01, 0.1).forEach(t => {
-    gradient.append("stop")
-        .attr("offset", `${t * 100}%`)
-        .attr("stop-color", windColor(t * maxWind));
-    });
-
-    // прямоугольник легенды
-    legend.append("rect")
-    .attr("width", 10)
-    .attr("height", legendHeight)
-    .style("fill", "url(#wind-gradient)");
-
-    // ось легенды
-    legend.append("g")
-    .attr("transform", "translate(10,0)")
-    .call(d3.axisRight(legendScale).ticks(5))
-    .append("text")
-    .attr("fill", "#000")
-    .attr("x", 0)
-    .attr("y", -5)
-    .text("м/с");
 }
 
 const drawWind2 = (data, dict, heightScale) => {

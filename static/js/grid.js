@@ -54,57 +54,6 @@ const drawGrid = (svg, dict, heightScale, tempScale) => {
         ];
     }
 
-    // === КОНСТАНТЫ ===
-    const g = 9.81;
-    const Rd = 287;
-    const Rv = 461;
-    const Cp = 1004;
-    const L = 2.5e6;
-
-    // === ДАВЛЕНИЕ (приближение) ===
-    function heightToPressure(h) {
-        return 1000 * Math.exp(-h / 8000);
-    }
-
-    // === ВСПОМОГАТЕЛЬНОЕ ===
-    function es(T) {
-        return 6.112 * Math.exp((17.67 * (T - 273.15)) / (T - 29.65));
-    }
-
-    function qs(p, T) {
-        const e = es(T);
-        return 0.622 * e / (p - e);
-    }
-
-    function moistLapseRate(p, T) {
-        const q = qs(p, T);
-
-        const num = g * (1 + (L * q) / (Rd * T));
-        const den = Cp + (L * L * q) / (Rv * T * T);
-
-        return num / den; // K/m
-    }
-
-    // === ПРОФИЛЬ ВЛАЖНОЙ АДИАБАТЫ ===
-    function moistAdiabatProfile(T0, h0, hMax, step = 100) {
-        let T = T0;
-        let result = [];
-
-        for (let h = h0; h <= hMax; h += step) {
-            const p = heightToPressure(h);
-
-            result.push({
-            height: h,
-            temp: T - 273.15
-            });
-
-            const gamma = moistLapseRate(p, T);
-            T = T - gamma * step;
-        }
-
-        return result;
-    }
-
     // === ОТРИСОВКА ===
     function drawMoistAdiabats() {
         const startTemps = d3.range(-20, 40, 5);
@@ -113,13 +62,13 @@ const drawGrid = (svg, dict, heightScale, tempScale) => {
             const profile = moistAdiabatProfile(T0 + 273.15, dict.height_base, dict.height_top);
 
             const line = d3.line()
-            .x(d => project(d.temp, d.height)[0])
-            .y(d => project(d.temp, d.height)[1]);
+                .x(d => project(d.temp, d.height)[0])
+                .y(d => project(d.temp, d.height)[1]);
 
             svg.append("path")
-            .datum(profile)
-            .attr("d", line)
-            .attr("class", "moist-adiabat");
+                .datum(profile)
+                .attr("d", line)
+                .attr("class", "moist-adiabat");
         });
     }
 
@@ -128,4 +77,55 @@ const drawGrid = (svg, dict, heightScale, tempScale) => {
 
 }
 
-export { drawGrid }
+// === КОНСТАНТЫ ===
+const g = 9.81;
+const Rd = 287;
+const Rv = 461;
+const Cp = 1004;
+const L = 2.5e6;
+
+// === ДАВЛЕНИЕ (приближение) ===
+function heightToPressure(h) {
+    return 1000 * Math.exp(-h / 8000);
+}
+
+// === ВСПОМОГАТЕЛЬНОЕ ===
+function es(T) {
+    return 6.112 * Math.exp((17.67 * (T - 273.15)) / (T - 29.65));
+}
+
+function qs(p, T) {
+    const e = es(T);
+    return 0.622 * e / (p - e);
+}
+
+function moistLapseRate(p, T) {
+    const q = qs(p, T);
+
+    const num = g * (1 + (L * q) / (Rd * T));
+    const den = Cp + (L * L * q) / (Rv * T * T);
+
+    return num / den; // K/m
+}
+
+// === ПРОФИЛЬ ВЛАЖНОЙ АДИАБАТЫ ===
+const moistAdiabatProfile = (T0, h0, hMax, step = 100) => {
+    let T = T0;
+    let result = [];
+
+    for (let h = h0; h <= hMax; h += step) {
+        const p = heightToPressure(h);
+
+        result.push({
+        height: h,
+        temp: T - 273.15
+        });
+
+        const gamma = moistLapseRate(p, T);
+        T = T - gamma * step;
+    }
+
+    return result;
+}
+
+export { drawGrid, moistAdiabatProfile }

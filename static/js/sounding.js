@@ -1,6 +1,10 @@
 import { drawWind } from "./wind.js";
+import { moistAdiabatProfile } from "./grid.js";
 
 const loadData = (url) => {
+    console.log('url3', url, url.pathname);
+
+    let spot_id = 1;
     /*return new Promise(function(resolve, reject) {
         d3.json(url).
         then(function(data) {
@@ -9,7 +13,7 @@ const loadData = (url) => {
     });*/
 
     return new Promise(function(resolve, reject) {
-        fetch(`/api/2`).
+        fetch(`/api/` + spot_id).
         then(function(data) {
             return resolve(data.json());
         });
@@ -23,15 +27,29 @@ const loadData = (url) => {
     });*/
 }
 
-const render = (data, i, svg, dict, heightScale, stratificationLine, dewpointLine) => {
-    drawWind(data[i], dict, heightScale);
+const render = (data, i, svg, dict, tempScale, heightScale, stratificationLine, dewpointLine) => {
+    let graphdata = []
 
+    if (dict.highScale && dict.highScale < 12000) {
+        //выбираем только те данные, которые меньше выбранной высоты highScale
+        data[i].forEach(function(d) {
+            if (d.height <= dict.highScale) {
+                graphdata.push(d)
+            }
+        })
+    } else {
+        graphdata = data[i]
+    }
 
+    //рисуем ветер
+    drawWind(graphdata, dict, heightScale);
+
+    //рисуем диаграмму
     svg.selectAll(".stratificationLine").remove();
     svg.selectAll(".dewpointLine").remove();
 
     svg.append("path")
-        .datum(data[i])
+        .datum(graphdata)
         .attr("fill", "none")
         .attr("class", "stratificationLine")
         .attr("stroke", "red")
@@ -39,74 +57,120 @@ const render = (data, i, svg, dict, heightScale, stratificationLine, dewpointLin
         .attr("d", stratificationLine);
 
     svg.append("path")
-        .datum(data[i])
+        .datum(graphdata)
         .attr("fill", "none")
         .attr("class", "dewpointLine")
         .attr("stroke", "green")
         .attr("stroke-width", 2)
         .attr("d", dewpointLine);
-}
 
-const proceesGeoJson = (geojson) => {
-    let data = [];
+    // ============================================
+    // Кривая состояния
+    // ============================================
 
-    for (let i = 0; i < geojson.length; i++) {
-        //console.log(i, Object.keys(geojson[0]));
-        console.log(geojson[i].H);
-        data[i] = {
-            "gpheight": geojson[i].H,
-            "temp": geojson[i].T,
-            "dewpoint": geojson[i].D,
-            "pressure": geojson[i].P,
-            "wind_u": geojson[i].Dir,
-            "wind_v": geojson[i].V
+    //удаляем предыдущие кривые
+    svg.selectAll(".state_grey").remove();
+    svg.selectAll(".state_blue").remove();
+
+
+    let surface_temp = Math.round(data[i][0]['temp']) - dict.tempK
+    let surface_dew = Math.round(data[i][0]['dewpoint']) - dict.tempK
+    
+    const t09 = surface_temp + 3
+    const t02 = surface_dew
+
+    //точка пересечения (верх треугольника)
+    const cross_height = dict.height_base + 128 * (t09 - t02)
+    const state_heights = d3.range(dict.height_base, cross_height, 100)
+
+    //голубая кривая - градиент 0.9
+    let data09 = []
+    state_heights.forEach(function(d, i) {
+        if (i == 0) {
+            data09.push({height: d, temp: t09})
+        } else {
+            data09.push({height: d, temp: data09[i-1].temp - 0.981})
         }
+    })
 
+    //сохраняем последнюю точку
+    let last = data09[data09.length - 1]
+
+    data09.push({height: cross_height, temp: last.temp - (cross_height - last.height)/100})
+
+    console.log(dict.height_base, cross_height);
+    console.log(999, last.temp, last.height);
+
+    const state_line = d3.line()
+        .x(d => tempScale(d.temp) + (heightScale(dict.height_base)-heightScale(d.height))/dict.tan)
+        .y(d => heightScale(d.height));
+
+    svg.append("path")
+        .datum(data09)
+        .attr("d", state_line)
+        .attr("class", "state_blue");
+
+    //рисуем серую кривую - градиент 0.2
+    let data02 = []
+    state_heights.forEach(function(d, i) {
+        if (i == 0) {
+            data02.push({height: d, temp: t02})
+        } else {
+            data02.push({height: d, temp: data02[i-1].temp - 0.2})
+        }
+    })
+
+    last = data02[data02.length - 1]
+
+    data02.push({height: cross_height, temp: last.temp - (cross_height - last.height)*0.2/100})
+
+    svg.append("path")
+        .datum(data02)
+        .attr("d", state_line)
+        .attr("class", "state_grey");
+
+    //решаем продолжать ли голубую кривую дальше, после верха треугольника
+    let index = 0;
+    while(data[i][index].height < last.height) {
+        index++;
     }
 
-    //--
+    const min = data[i][index];
+    const max = data[i][index+1];
 
-    /*for (let i in geojson.features) {
+    //формула считаем скорость измения температуры с высотой
+    const grad = (max.temp - min.temp) / (max.height - min.height)
+    //считаем предполагаемую температуру кривой стратификауии на высоте базы (верх треугольника) 
+    //добавляем погрешность 1.5 градуса, чтобы когда кривая стратификации близко, все равно рисовать
+    const estimated_temp = (min.temp - dict.tempK) + ((last.height - min.height) * grad) - 1.5
 
-        //console.log(typeof value === 'number')
-        //console.log(typeof geojson.features[i].properties.temp)
-        
-        //if (typeof geojson.features[i].properties.temp  === 'number' && geojson.features[i].properties.pressure > 700) {
-        if (typeof geojson.features[i].properties.temp  === 'number') {
-            data[i] = geojson.features[i].properties;
-        } 
-    }*/
+    //если наша температура больше или равна предполагаемой, рисуем по влажной адиабате
+    if (estimated_temp < last.temp) {
+        const moist_state_profile = moistAdiabatProfile(data09[data09.length - 1].temp + dict.tempK, cross_height, dict.height_top)
 
-    console.log(11111, data);    
-    return data;
-    
+        svg.append("path")
+            .datum(moist_state_profile)
+            .attr("d", state_line)
+            .attr("fill", "none")
+            .attr("class", "state_blue");
+    }
 }
 
-const drawGraphics = (svg, dict, heightScale, stratificationLine, dewpointLine) => {
+const drawGraphics = (full_data, svg, dict, tempScale, heightScale, stratificationLine, dewpointLine) => {
 
-    loadData("static/data/Skew.csv")
-        .then(function(full_data) { console.log(full_data)
+    if (!Object.keys(full_data).length) {
+        alert("Пока нет данных! Возможно, погоду на этом споте давно никто не смотрел. Заходите через пару минут, и они появятся!")
+    }
 
-        if (!Object.keys(full_data).length) {
-            alert("Пока нет данных! Возможно, погоду на этом споте давно никто не смотрел. Заходите через пару минут, и они появятся!")
-        }
+    let data = full_data['data']
+    let dates = full_data['dates']
 
-        let data = full_data['data']
-        let dates = full_data['dates']
+    console.log(dates)
+    console.log(full_data)
 
-        console.log(dates)
-        console.log(full_data)
+    render(data, dates[0], svg, dict, tempScale, heightScale, stratificationLine, dewpointLine);
 
-        render(data, dates[0], svg, dict, heightScale, stratificationLine, dewpointLine);
-
-        //full_data.push(proceesGeoJson(geojson));
-        //full_data.push(geojson);
-
-        //console.log(33333, full_data);
-
-        //render(data, 0, svg, dict, pressureScale, stratificationLine, dewpointLine);
-
-        // Создаем метки на слайдере (каждую вторую)
+    // Создаем метки на слайдере (каждую вторую)
     const slider = document.getElementById('timeSlider');
     const sliderLabels = document.getElementById('sliderLabels');
     const tooltip = document.getElementById('tooltip');
@@ -140,7 +204,7 @@ const drawGraphics = (svg, dict, heightScale, stratificationLine, dewpointLine) 
                 const percent = (index / (dates.length - 1)) * 100;
                 slider.value = percent;
                 //updateSelectedDate(index);
-                render(data, dates[index], svg, dict, heightScale, stratificationLine, dewpointLine);
+                render(data, dates[index], svg, dict, tempScale, heightScale, stratificationLine, dewpointLine);
             });
             
             sliderLabels.appendChild(label);
@@ -196,7 +260,7 @@ const drawGraphics = (svg, dict, heightScale, stratificationLine, dewpointLine) 
         const date = dates[index];
         
         //updateSelectedDate(index);
-        render(data, dates[index], svg, dict, heightScale, stratificationLine, dewpointLine);
+        render(data, dates[index], svg, dict, tempScale, heightScale, stratificationLine, dewpointLine);
         
         // Подсвечиваем активную метку
         document.querySelectorAll('.slider-label').forEach((label, i) => {
@@ -210,7 +274,6 @@ const drawGraphics = (svg, dict, heightScale, stratificationLine, dewpointLine) 
             }
         });
     });
-
 
      /*   //крутилка
         d3.select("#timeRange")
@@ -236,59 +299,6 @@ const drawGraphics = (svg, dict, heightScale, stratificationLine, dewpointLine) 
                 }
             });*/
 
-        });
-
-   /* 
-    //loadData("static/data/ryz.geojson")
-    loadData("static/data/Skew.csv")
-
-    //d3.json()
-        .then(function(geojson) { 
-
-        let full_data = [];
-
-        console.log(22222, geojson);
-
-        //full_data.push(proceesGeoJson(geojson));
-        full_data.push(geojson);
-
-        loadData("static/data/ryz2.geojson").then(
-            function(geojson) {
-                full_data.push(proceesGeoJson(geojson));
-
-                loadData("static/data/ryz3.geojson").then(
-                    function(geojson) {
-                        full_data.push(proceesGeoJson(geojson));
-
-                        loadData("static/data/ryz4.geojson").then(
-                        function(geojson) {
-                            full_data.push(proceesGeoJson(geojson));
-
-                            loadData("static/data/ryz5.geojson").then(
-                                function(geojson) {
-                                    full_data.push(proceesGeoJson(geojson));
-
-                                    render(full_data, 0, svg, dict, pressureScale, stratificationLine, dewpointLine);
-
-                                    //крутилка
-                                    d3.select("#timeRange")
-                                        .attr("type", "range")
-                                        .attr("min", 0)
-                                        .attr("max", 4)
-                                        .attr("value", 0)
-                                        .on("input", function(v) {
-                                            console.log(v.target.value)
-                                            render(full_data, v.target.value, svg, dict, pressureScale, stratificationLine, dewpointLine);
-                                        });
-
-
-                                
-                            })
-                    })
-            })
-            
-        })
-    })  */  
 }
 
 export { loadData, drawGraphics }

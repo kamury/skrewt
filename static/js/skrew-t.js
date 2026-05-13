@@ -16,17 +16,18 @@ const tempK = 273.15;
 const tan = width / height;
 
 //получаем все данные
-loadData('url').then(function(data) {
+loadData(url).then(function(data) {
     //console.log(12345, data)
     console.log(data['data'][data['dates'][0]][0]['temp'])
     console.log(data['data'][data['dates'][0]][0]['height'])
 
+    //получаем из данных температуру и точку росы на поверхности (первое значение в массиве)
     let surface_temp = Math.round(data['data'][data['dates'][0]][0]['temp']) - tempK
+    let surface_dew = Math.round(data['data'][data['dates'][0]][0]['dewpoint']) - tempK
 
     let height_top = 15000;
     let height_base = data['data'][data['dates'][0]][0]['height'];
-    let temp_base = -40;
-    let temp_top = 60;
+    let temp_base, temp_top;
 
     if (highScale == 3500) {
         height_top = 3500
@@ -38,6 +39,11 @@ loadData('url').then(function(data) {
         temp_top = surface_temp+10;
         //temp_base = 0;
         //temp_top = 40;
+    } else {
+        temp_base = surface_temp -70
+        temp_top = surface_temp + 10
+        //let temp_base = -40;
+        //let temp_top = 60;
     }
 
     const dict = {
@@ -49,7 +55,9 @@ loadData('url').then(function(data) {
         "temp_base": temp_base,
         "temp_top": temp_top,
         "tan": tan,
-        "tempK": tempK
+        "tempK": tempK,
+        "surface_temp": surface_temp,
+        "surface_dew": surface_dew
     };
 
     const svg = d3.select("#skewt-container")
@@ -107,6 +115,6 @@ loadData('url').then(function(data) {
     });
 
     console.log(123);
-    drawGraphics(svg, dict, heightScale, stratificationLine, dewpointLine);
+    drawGraphics(data, svg, dict, tempScale, heightScale, stratificationLine, dewpointLine);
 
 })
