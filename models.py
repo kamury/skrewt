@@ -24,7 +24,7 @@ def get_actual_sounding_data(spot_id):
     hours = [0, 6, 12, 18]
 
     if result:
-        last_request_datetime = datetime.strptime(f'{result['request_date']} {result['request_time']}:00', '%Y-%m-%d %H:%M')
+        last_request_datetime = datetime.strptime(f"{result['request_date']} {result['request_time']}:00", '%Y-%m-%d %H:%M')
         last_request_datetime = last_request_datetime.replace(tzinfo=timezone.utc)
         print(1111, last_request_datetime, utc_now)
         #если есть свежие данные
@@ -38,7 +38,7 @@ def get_actual_sounding_data(spot_id):
                 prev_request_time = 18
                 prev_request_date = last_request_datetime.date() - timedelta(days=1)
 
-            datetime_limit = f'{result['datetime'].date()} 00:00:00'
+            datetime_limit = f"{result['datetime'].date()} 00:00:00"
 
         
             print(prev_request_date, prev_request_time, datetime_limit)
