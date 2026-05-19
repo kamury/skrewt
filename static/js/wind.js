@@ -142,8 +142,8 @@ const drawWind2 = (data, dict, heightScale) => {
 
     const svg = d3.select("#wind-container")
         .append("svg")
-        .attr("width", 200)
-        .attr("height", dict.height + 80);
+        //.attr("width", 200)
+        //.attr("height", dict.height + 80);
 
     let next_height = 0;
 

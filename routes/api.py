@@ -14,6 +14,7 @@ import models
 import threading
 
 NOAA_DELAY = 3
+LOG_FILE = '/home/m/mymysewi/meteo.xcmonsters.com/debug.log'
 
 # Создаем blueprint для API
 api_bp = Blueprint('api', __name__, url_prefix='/api')
@@ -178,9 +179,18 @@ def load_by_spot(spot):
     hour_timezone = (noaa_hour + spot['timezone']) % 24
 
     url = f"https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25_1hr.pl?dir=%2Fgfs.{noaa_date_url}%2F{noaa_hour:02d}%2Fatmos&file=gfs.t{noaa_hour:02d}z.pgrb2.0p25.anl&var_RH=on&var_TMP=on&var_UGRD=on&var_VGRD=on&var_LAND=on&var_HGT=on&var_PRES=on&lev_1829_m_above_mean_sea_level=on&lev_2743_m_above_mean_sea_level=on&lev_3658_m_above_mean_sea_level=on&lev_100_m_above_ground=on&lev_1000_mb=on&lev_975_mb=on&lev_950_mb=on&lev_925_mb=on&lev_900_mb=on&lev_850_mb=on&lev_800_mb=on&lev_750_mb=on&lev_700_mb=on&lev_650_mb=on&lev_600_mb=on&lev_550_mb=on&lev_500_mb=on&lev_450_mb=on&lev_400_mb=on&lev_350_mb=on&lev_300_mb=on&lev_250_mb=on&lev_200_mb=on&lev_150_mb=on&lev_100_mb=on&lev_surface=on&lev_max_wind=on&lev_mean_sea_level=on&lev_boundary_layer_cloud_layer=on&lev_convective_cloud_layer=on&lev_convective_cloud_bottom_level=on&lev_convective_cloud_top_level=on&lev_high_cloud_layer=on&lev_high_cloud_bottom_level=on&lev_high_cloud_top_level=on&lev_low_cloud_layer=on&lev_low_cloud_bottom_level=on&lev_low_cloud_top_level=on&lev_middle_cloud_layer=on&lev_middle_cloud_bottom_level=on&lev_middle_cloud_top_level=on&subregion=&toplat={lat+1}&leftlon={lon}&rightlon={lon+1}&bottomlat={lat}"
-    #читаем гриб, пишем данные в табличку
-    data = read_grib(url, spot['latitude'], spot['longtitude'])
-
+    
+    try:
+        #читаем гриб, пишем данные в табличку
+        data = read_grib(url, spot['latitude'], spot['longtitude'])
+    except Exception as e:
+        with open(LOG_FILE, 'a') as f:
+            f.write(f"error {str(e)}\n")
+        import traceback
+        with open(LOG_FILE, 'a') as f:
+            f.write(traceback.format_exc())
+        return
+    
     #если этих данных нет в архиве, пишем
     if not (models.is_archive_exist(spot['id'], noaa_datetime)):
         models.save_sounding_archive(spot['id'], noaa_datetime, data)
@@ -209,7 +219,18 @@ def load_by_spot(spot):
         forecast_datetime = f'{utc_now.date()} {hour_timezone:02d}:00:00'
         print(f, time, noaa_hour)
         url = f"https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25_1hr.pl?dir=%2Fgfs.{noaa_date_url}%2F{noaa_hour:02d}%2Fatmos&file=gfs.t{noaa_hour:02d}z.pgrb2.0p25.f0{f:02d}&var_RH=on&var_TMP=on&var_UGRD=on&var_VGRD=on&var_LAND=on&var_HGT=on&var_PRES=on&lev_1829_m_above_mean_sea_level=on&lev_2743_m_above_mean_sea_level=on&lev_3658_m_above_mean_sea_level=on&lev_100_m_above_ground=on&lev_1000_mb=on&lev_975_mb=on&lev_950_mb=on&lev_925_mb=on&lev_900_mb=on&lev_850_mb=on&lev_800_mb=on&lev_750_mb=on&lev_700_mb=on&lev_650_mb=on&lev_600_mb=on&lev_550_mb=on&lev_500_mb=on&lev_450_mb=on&lev_400_mb=on&lev_350_mb=on&lev_300_mb=on&lev_250_mb=on&lev_200_mb=on&lev_150_mb=on&lev_100_mb=on&lev_surface=on&lev_max_wind=on&lev_mean_sea_level=on&lev_boundary_layer_cloud_layer=on&lev_convective_cloud_layer=on&lev_convective_cloud_bottom_level=on&lev_convective_cloud_top_level=on&lev_high_cloud_layer=on&lev_high_cloud_bottom_level=on&lev_high_cloud_top_level=on&lev_low_cloud_layer=on&lev_low_cloud_bottom_level=on&lev_low_cloud_top_level=on&lev_middle_cloud_layer=on&lev_middle_cloud_bottom_level=on&lev_middle_cloud_top_level=on&subregion=&toplat={lat+1}&leftlon={lon}&rightlon={lon+1}&bottomlat={lat}"
-        data = read_grib(url, spot['latitude'], spot['longtitude'])
+        
+        try:
+            #читаем гриб, пишем данные в табличку
+            data = read_grib(url, spot['latitude'], spot['longtitude'])
+        except Exception as e:
+            with open(LOG_FILE, 'a') as f:
+                f.write(f"error {str(e)}\n")
+            import traceback
+            with open(LOG_FILE, 'a') as f:
+                f.write(traceback.format_exc())
+            return
+        
         models.save_forecast(data, spot['id'], utc_now.date(), noaa_hour, forecast_datetime)
 
     for i in range(1,4):
@@ -221,7 +242,18 @@ def load_by_spot(spot):
             forecast_datetime = f'{forecast_date} {hour_timezone:02d}:00:00'                
             print(f, forecast_datetime, time, noaa_hour)
             url = f"https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25_1hr.pl?dir=%2Fgfs.{noaa_date_url}%2F{noaa_hour:02d}%2Fatmos&file=gfs.t{noaa_hour:02d}z.pgrb2.0p25.f0{f:02d}&var_RH=on&var_TMP=on&var_UGRD=on&var_VGRD=on&var_LAND=on&var_HGT=on&var_PRES=on&lev_1829_m_above_mean_sea_level=on&lev_2743_m_above_mean_sea_level=on&lev_3658_m_above_mean_sea_level=on&lev_100_m_above_ground=on&lev_1000_mb=on&lev_975_mb=on&lev_950_mb=on&lev_925_mb=on&lev_900_mb=on&lev_850_mb=on&lev_800_mb=on&lev_750_mb=on&lev_700_mb=on&lev_650_mb=on&lev_600_mb=on&lev_550_mb=on&lev_500_mb=on&lev_450_mb=on&lev_400_mb=on&lev_350_mb=on&lev_300_mb=on&lev_250_mb=on&lev_200_mb=on&lev_150_mb=on&lev_100_mb=on&lev_surface=on&lev_max_wind=on&lev_mean_sea_level=on&lev_boundary_layer_cloud_layer=on&lev_convective_cloud_layer=on&lev_convective_cloud_bottom_level=on&lev_convective_cloud_top_level=on&lev_high_cloud_layer=on&lev_high_cloud_bottom_level=on&lev_high_cloud_top_level=on&lev_low_cloud_layer=on&lev_low_cloud_bottom_level=on&lev_low_cloud_top_level=on&lev_middle_cloud_layer=on&lev_middle_cloud_bottom_level=on&lev_middle_cloud_top_level=on&subregion=&toplat={lat+1}&leftlon={lon}&rightlon={lon+1}&bottomlat={lat}"
-            data = read_grib(url, spot['latitude'], spot['longtitude'])
+            
+            try:
+                #читаем гриб, пишем данные в табличку
+                data = read_grib(url, spot['latitude'], spot['longtitude'])
+            except Exception as e:
+                with open(LOG_FILE, 'a') as f:
+                    f.write(f"error {str(e)}\n")
+                import traceback
+                with open(LOG_FILE, 'a') as f:
+                    f.write(traceback.format_exc())
+                return
+            
             models.save_forecast(data, spot['id'], utc_now.date(), noaa_hour, forecast_datetime)
 
 @api_bp.route('/dd', methods=['GET'])
@@ -280,10 +312,6 @@ def  read_grib(url, point_lat, point_lon):
             elif grb.typeOfLevel == 'heightAboveGround':
                 aboveGround_levels.append(grb.level)
 
-    print(isobaric_levels)
-    print(aboveSea_levels)
-    print(aboveGround_levels)
-
     #определяем индексы координат ближайших точкек и веса
     distances = []
     indexes = []
@@ -313,7 +341,6 @@ def  read_grib(url, point_lat, point_lon):
     #находим высоту поверхности
     z_surface = grbs.select(shortName='orog', typeOfLevel='surface')[0]
     point_height = get_average_value(z_surface, indexes, distances)
-    print(8888, point_height)
     
     data = []
     dewpoints = {}
@@ -360,9 +387,14 @@ def  read_grib(url, point_lat, point_lon):
             delta = point_height
 
         line = {}
-        for p in params:
-            field = grbs.select(shortName=p, typeOfLevel=typeOfLevel, level=level)[0]
-            line[params[p]] = get_average_value(field, indexes, distances)
+        try:
+            #для кастомных получаем только температуру
+            field = grbs.select(shortName='t', typeOfLevel=typeOfLevel, level=level)[0]
+            line['temp'] = get_average_value(field, indexes, distances)
+            line['wind_u'] = None
+            line['wind_v'] = None
+        except (IndexError, ValueError) as e:
+            continue
 
         #может не быть значений для этого левела
         if math.isnan(line['temp']):

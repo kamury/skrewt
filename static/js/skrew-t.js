@@ -62,8 +62,8 @@ loadData(url).then(function(data) {
 
     const svg = d3.select("#skewt-container")
         .append("svg")
-        .attr("width", width)
-        .attr("height", height + margin.top + margin.bottom)
+        //.attr("width", width)
+        //.attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 

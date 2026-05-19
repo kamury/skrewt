@@ -13,7 +13,7 @@ body {
 
 /* карточка диаграммы */
 .diagram-card {
-    max-width: 1280px;
+    /*max-width: 1280px;*/
     margin: 0 auto;
     background: #ffffff;
     border-radius: 32px;
@@ -305,4 +305,61 @@ footer {
     margin-top: 16px;
     font-size: 0.7rem;
     color: #7f9aab;
+}
+
+/* ----- Фикс для десктопа: график + ветер всегда рядом ----- */
+.text-blocks {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+#skewt-container {
+    flex: 1;           /* Занимает всё свободное место */
+    min-width: 0;      /* Разрешает сжиматься, если нужно */
+    width: auto;       /* Отменяем фиксированную ширину */
+}
+
+#wind-container {
+    flex: 0 0 auto;    /* Не растягивается, не сжимается */
+    width: auto;       /* Естественная ширина */
+    max-width: 150px;  /* Ограничиваем, чтобы не расползался */
+}
+
+/* ----- Фикс для мобильных: график слева, ветер справа ----- */
+@media (max-width: 768px) {
+    .text-blocks {
+        display: block !important;  /* Отключаем flex */
+        overflow: hidden;           /* Очищаем поток */
+    }
+
+    #skewt-container {
+        float: left !important;
+        width: calc(100% - 110px) !important;  /* Оставляем место для ветера */
+        margin-right: 10px;
+    }
+
+    #wind-container {
+        float: left !important;      /* или right, но left проще */
+        width: 100px !important;     /* Фиксированная ширина для ветра */
+    }
+}
+
+/* ----- Адаптивный график для мобильных ----- */
+@media (max-width: 768px) {
+    /* Сам контейнер */
+    #skewt-container {
+        width: 100% !important;
+        max-width: 100%;
+        overflow-x: auto;  /* Если не влезает — появится скролл */
+    }
+
+    /* SVG внутри графика */
+    #skewt-container svg {
+        width: 100% !important;
+        height: auto !important;
+        display: block;
+    }
 }
