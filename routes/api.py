@@ -22,7 +22,15 @@ api_bp = Blueprint('api', __name__, url_prefix='/api')
 # Эндпоинт для получения данных
 @api_bp.route('/file', methods=['GET'])
 def read_file():
-    grbs = pygrib.open('static/data/bir.anl')
+    grbs = pygrib.open('static/data/gfs.anl')
+
+    t850 = grbs.select(shortName='t', level=850)
+    for it in t850:
+        values, lat1, lon1 = it.data()
+        print(values, lat1, lon1);
+        
+
+
 
     print("Все доступные поля в файле crane_no_planetary:")
     for i, grb in enumerate(grbs):
@@ -124,6 +132,12 @@ def get_actual_sounding_data(spot_id):
         thread.start()
         return jsonify({})
 
+    #with open(LOG_FILE, 'a', encoding='utf-8') as f:
+    #    f.write(f"error {str(data)}\n")
+
+    #with open(LOG_FILE, 'a') as f:
+    #        f.write(f"error {str(e)}\n")
+    
     for d in data:
         if d['datetime'] == current_datetime:
             set.append(d)
@@ -133,6 +147,10 @@ def get_actual_sounding_data(spot_id):
                 set = []
                 dates.append(current_datetime.strftime('%Y-%m-%d %H:%M'))
             current_datetime = d['datetime']
+
+    #чтобы не потерять последний элемент
+    data_by_datetime[current_datetime.strftime('%Y-%m-%d %H:%M')] = set
+    dates.append(current_datetime.strftime('%Y-%m-%d %H:%M'))
 
     return jsonify({'dates':dates, 'data': data_by_datetime})
 
@@ -162,7 +180,7 @@ def load_by_spot(spot):
 
     #Получить текущее время UTC
     utc_now = datetime.now(timezone.utc)
-    noaa_hour = max([h for h in hours if h < (utc_now.hour - NOAA_DELAY)])
+    noaa_hour = max([h for h in hours if h <= (utc_now.hour - NOAA_DELAY)])
 
     #для подстановки в урл
     noaa_date_url = utc_now.strftime('%Y%m%d')
@@ -357,9 +375,8 @@ def  read_grib(url, point_lat, point_lon):
             line[params[p]] = get_average_value(field, indexes, distances)
 
         #берем только те уровни, которые выше поверхности
-        print('lev', level, line)
         line['height'] = calcHeight(level, line['temp'])
-        print(line, point_height)
+        
         if line['height'] < point_height:
             continue
 

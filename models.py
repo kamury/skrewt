@@ -1,6 +1,8 @@
 from db import query_db
 from datetime import datetime, timedelta, timezone
 
+LOG_FILE = '/home/m/mymysewi/meteo.xcmonsters.com/debug.log'
+
 def get_all_spots():
     return query_db('SELECT * FROM spots')
 
@@ -29,7 +31,7 @@ def get_actual_sounding_data(spot_id):
         print(1111, last_request_datetime, utc_now)
         #если есть свежие данные
         #if ((utc_now - request_datetime) < timedelta(hours=10)):
-        if ((utc_now - last_request_datetime) < timedelta(hours=518)):
+        if ((utc_now - last_request_datetime) < timedelta(hours=14)):
             index = hours.index(result['request_time'])
             if index:
                 prev_request_time = hours[index - 1]
@@ -42,7 +44,7 @@ def get_actual_sounding_data(spot_id):
 
         
             print(prev_request_date, prev_request_time, datetime_limit)
-            
+
             query = '''select * from ( 
                             SELECT *
                             FROM forecast f

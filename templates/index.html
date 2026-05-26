@@ -4,76 +4,296 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Аэрологическая диаграмма. {{ spot.title }}.</title>
-    <script src="{{ url_for('static', filename='js/d3.v7.min.js')}}"></script>
+    
+    <!-- Внешние скрипты и стили -->
+    <script src="/static/js/d3.v7.min.js"></script>
     <link rel="stylesheet" href="/static/css/slider.css">
-    <link rel="stylesheet" href="/static/css/page.css">
-    <link rel="stylesheet" href="/templates/">
+    
     <style>
-        svg { background: #ffffff; }
-            /*.grid-line { stroke: #ddd; stroke-width: 0.5; }*/
-            .pressureLines { stroke: #555; stroke-dasharray: 2,2; }
-            .isoterm { stroke: #a96d42; stroke-width: 0.5px; fill: none; }
-            .dry-adiabat { stroke: #c21134; stroke-width: 0.5px; fill: none; }  /* Коричневый */
-            .moist-adiabat { stroke: #1e90ff; stroke-dasharray: 5,5; stroke-width: 0.5px; fill: none; } /* Синий */
-            .state_grey {stroke: #888; stroke-width: 2px;}
-            .state_blue {stroke: #35FF; stroke-width: 3px;}
-            .mixing-ratio { stroke: #32cd32; }  /* Зелёный */
-
-        .gridline, .tempzero {
-            stroke: #0a0a09;
-            stroke-width: 0.5px;
-            fill: none;
-        }
-        .tempzero { stroke: #aaa; stroke-width: 1.25px; }
-
-        .arrow {
-            fill: none;
-            stroke: black;
-            stroke-width: 2;
+        /* ========== ГЛОБАЛЬНЫЕ СТИЛИ ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-
-        #windbarbs{
-            width: 100%;
-            height: 100%;
-            background: black;
-        }
-  
-  
-        @media screen and (min-width: 992px) {
-            #barbs {
-                width: 8%;
-                height: 80vh;
-                margin-top: 0px;
+        body {
+            background: #e9f0f5;
+            font-family: 'Segoe UI', 'Roboto', system-ui, -apple-system, 'Inter', sans-serif;
+            padding: 20px;
+            color: #1a2c3e;
         }
 
-        table {
-            width:100%;
-            height:100%;
-            font-size: 1.1em;
+        /* ========== ГЛАВНАЯ КАРТОЧКА ========== */
+        .diagram-card {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 32px;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
 
-        tr, td {
-            font-family: "Helvetica";
-            border: 1px solid black;
-            background: #1A1A1A;
-            text-align: right;
-            padding-right: 10px;
+        /* ========== ШАПКА ========== */
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 24px 28px 16px 28px;
+            border-bottom: 1px solid #e2edf2;
+            background: #fefefe;
+        }
+
+        .title-section h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1f4e6e, #2b6c8f);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 6px;
+        }
+
+        .sub {
+            font-size: 0.85rem;
+            color: #5b7f95;
+            font-weight: 500;
+        }
+
+        /* Кнопка спота */
+        .spot-btn-wrapper {
+            position: relative;
+        }
+
+        .spot-button {
+            background: #f0f6fa;
+            border: 1px solid #cbdde6;
+            padding: 10px 20px;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1f5e7e;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .spot-button:hover {
+            background: #e4eef5;
+            transform: scale(0.98);
+        }
+
+        .spots-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.2);
+            width: 260px;
+            z-index: 100;
+            opacity: 0;
+            transform: translateY(-8px);
+            pointer-events: none;
+            transition: all 0.2s;
+        }
+
+        .spots-dropdown.open {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .spots-list {
+            list-style: none;
+            max-height: 380px;
+            overflow-y: auto;
+        }
+
+        .spots-list li {
+            border-bottom: 1px solid #ecf3f7;
+        }
+
+        .spot-link {
+            display: block;
+            padding: 14px 20px;
+            text-decoration: none;
+            color: #1f4e6e;
+            font-weight: 500;
+        }
+
+        .spot-link:hover {
+            background: #eef4fa;
+        }
+
+        /* ========== ПАНЕЛЬ ВЫСОТ ========== */
+        .heights-panel {
+            padding: 18px 28px 8px 28px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1px solid #ecf3f7;
+        }
+
+        .height-btn {
+            background: #f3f9fe;
+            border: 1px solid #cfe0ea;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2c647f;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .height-btn.active {
+            background: #1f6e8c;
+            border-color: #1f6e8c;
             color: white;
         }
 
-        th {
-            padding-right: 10px;
-            color: #cccccc;
+        .height-btn:hover:not(.active) {
+            background: #e3eff7;
         }
 
-        input[type="range"] {
-            width: 100%;
-            margin: 10px 0;
+        /* ========== ОСНОВНОЙ БЛОК: ГРАФИК + ВЕТЕР ========== */
+        .main-row {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            align-items: flex-start;
+            gap: 24px;
+            padding: 24px 28px;
         }
-  }
-  
-  /* Точки на треке (псевдоэлемент) */
+
+        /* Контейнер графика — занимает всё свободное место */
+        .chart-wrapper {
+            flex: 1;
+            min-width: 0;      /* Важно для корректного сжатия */
+            width: 100%;
+        }
+
+        /* Контейнер ветра — фиксированная ширина, прижат справа */
+        .wind-wrapper {
+            flex: 0 0 auto;
+            width: 120px;
+        }
+
+        /* Адаптив для мобильных */
+        @media (max-width: 768px) {
+            .main-row {
+                gap: 16px;
+                padding: 16px 20px;
+            }
+            .wind-wrapper {
+                width: 90px;
+            }
+        }
+
+        /* Стили для самого графика (SVG) */
+        .chart-wrapper svg {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: #ffffff;
+            border-radius: 8px;
+        }
+
+        /* Стили для блока ветра */
+        .wind-wrapper {
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        /* ========== СЛАЙДЕР ========== */
+        /* Стили слайдера — минимальные, чтобы он правильно позиционировался */
+        .slider-section {
+            padding: 8px 28px 28px 28px;
+        }
+
+        .container {
+            width: 100%;
+            background: transparent;
+            padding: 0;
+        }
+
+        .slider-wrapper {
+            position: relative;
+            padding: 0.5rem 0 1.5rem 0;
+        }
+
+        /* ========== АДАПТИВ ДЛЯ ПЛАНШЕТОВ И ТЕЛЕФОНОВ ========== */
+        @media (max-width: 992px) {
+            body {
+                padding: 12px;
+            }
+            .header {
+                padding: 18px 20px 12px 20px;
+            }
+            .title-section h1 {
+                font-size: 1.5rem;
+            }
+            .heights-panel {
+                padding: 12px 20px;
+            }
+            .main-row {
+                padding: 20px;
+            }
+            .slider-section {
+                padding: 4px 20px 20px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .spot-btn-wrapper {
+                align-self: flex-start;
+            }
+            .height-btn {
+                padding: 6px 14px;
+                font-size: 0.8rem;
+            }
+            .wind-wrapper {
+                width: 80px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .spots-dropdown {
+                left: 0;
+                right: auto;
+
+                width: min(260px, calc(100vw - 32px));
+                max-width: calc(100vw - 32px);
+            }
+        }
+
+        /* Дополнительные стили для контента */
+        svg {
+            background: #ffffff;
+        }
+
+        .pressureLines { stroke: #555; stroke-dasharray: 2,2; }
+        .isoterm { stroke: #a96d42; stroke-width: 0.5px; fill: none; }
+        .dry-adiabat { stroke: #c21134; stroke-width: 0.5px; fill: none; }
+        .moist-adiabat { stroke: #1e90ff; stroke-dasharray: 5,5; stroke-width: 0.5px; fill: none; }
+        .state_grey { stroke: #888; stroke-width: 2px; }
+        .state_blue { stroke: #35FF; stroke-width: 3px; }
+        .mixing-ratio { stroke: #32cd32; }
+        .gridline, .tempzero { stroke: #0a0a09; stroke-width: 0.5px; fill: none; }
+        .tempzero { stroke: #aaa; stroke-width: 1.25px; }
+        .arrow { fill: none; stroke: black; stroke-width: 2; }
+
+        /* Точки на треке (псевдоэлемент) */
 
 .slider-track-markers {
     position: absolute;      /* Добавь */
@@ -93,28 +313,24 @@
     border-radius: 50%;
     transform: translateX(-50%);  /* Убери translateY, если он есть */
     /* Если точки всё ещё ниже, добавь: */
-    top: -38px;   /* Подними вручную */
+    top: -30px;   /* Подними вручную */
 }
-
-
     </style>
 </head>
 <body>
     <div class="diagram-card">
-        <!-- Верхний блок: заголовок + кнопка выбора спота -->
+        <!-- Шапка -->
         <div class="header">
             <div class="title-section">
-                <h1>Аэрологическая диаграмма. {{ spot.title }}</h1>
+                <h1>Аэрологическая диаграмма. {{ spot.title }}.</h1>
                 <div class="sub">
-                    <span>📡 GFS, данные от 0 часов 05.03.2026</span>
+                    📡 GFS, данные от <span id="request_time">-</span> часов <span id="request_date">обновляется..</span>
                 </div>
             </div>
             <div class="spot-btn-wrapper" id="spotWrapper">
-                <button class="spot-button" id="spotToggleBtn" aria-label="Выбрать спот">
-                    <span class="spot-icon">📍</span> Выбрать спот
-                    <span style="font-size:1rem;">⌵</span>
+                <button class="spot-button" id="spotToggleBtn">
+                    <span class="spot-icon">📍</span> Выбрать спот <span style="font-size:1rem;">⌵</span>
                 </button>
-                <!-- выпадающий список спотов -->
                 <div class="spots-dropdown" id="spotsDropdown">
                     <ul class="spots-list" id="spotsList">
                         {% for spot in spot_list %}
@@ -127,92 +343,75 @@
             </div>
         </div>
 
-        {% set current_scale = request.args.get('scale', '12000') %}
-    
-        <!-- Панель с тремя высотами -->
+        <!-- Панель высот -->
         <div class="heights-panel">
             <a href="/{{ spot.id }}/?scale=3500" class="height-btn {% if current_scale == '3500' %}active{% endif %}">3,5 км</a>
             <a href="/{{ spot.id }}/?scale=6000" class="height-btn {% if current_scale == '6000' %}active{% endif %}">6 км</a>
             <a href="/{{ spot.id }}/?scale=12000" class="height-btn {% if current_scale == '12000' %}active{% endif %}" data-height="12000">12 км</a>
         </div>
 
-        <div class="text-blocks">
-        
-            <div id="skewt-container" style="display: inline-block;"></div>
-            <script type="module" src="{{ url_for('static', filename='js/skrew-t.js')}}"></script>
-
-            <div id="wind-container" style="display: inline-block"></div>
-        </div>
-
-        <div class="container">
-            <div class="slider-wrapper">
-                <input type="range" id="timeSlider" min="0" max="100" step="0.1" value="0">
-                <div class="slider-labels" id="sliderLabels"></div>
-                <div id="tooltip" class="tooltip" style="display: none;"></div>
-                <div class="slider-track-markers" id="trackMarkers"></div>
+        <!-- Основной ряд: график + ветер -->
+        <div class="main-row">
+            <div class="chart-wrapper">
+                <!-- Здесь будет ваш график (skewt) -->
+                <div id="skewt-container"></div>
+            </div>
+            <div class="wind-wrapper">
+                <!-- Здесь будет блок с ветром -->
+                <div id="wind-container"></div>
             </div>
         </div>
-        
+
+        <div id="current_request_datetime">
+        </div>
+
+        <!-- Слайдер -->
+        <div class="slider-section">
+            <div class="container">
+                <div class="slider-wrapper">
+                    <input type="range" id="timeSlider" min="0" max="100" step="0.1" value="0">
+                    <div class="slider-labels" id="sliderLabels"></div>
+                    <div id="tooltip" class="tooltip" style="display: none;"></div>
+                    <div class="slider-track-markers" id="trackMarkers"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!-- Скрипты -->
+    <script type="module" src="/static/js/skrew-t.js"></script>
     <script>
-        // ---------- Логика выпадающего меню (открытие/закрытие) ----------
-       const spotToggleBtn = document.getElementById('spotToggleBtn');
-       const spotsDropdown = document.getElementById('spotsDropdown');
+        // Логика выпадающего меню
+        const spotToggleBtn = document.getElementById('spotToggleBtn');
+        const spotsDropdown = document.getElementById('spotsDropdown');
 
-       function closeDropdown() {
-           if (spotsDropdown) spotsDropdown.classList.remove('open');
-       }
-
-       function toggleDropdown(e) {
-           e.stopPropagation();
-           if (spotsDropdown.classList.contains('open')) {
-               closeDropdown();
-           } else {
-               spotsDropdown.classList.add('open');
-           }
-       }
-
-       // ---------- Логика выпадающего меню (открытие/закрытие) ----------
-       if (spotToggleBtn && spotsDropdown) {
-           spotToggleBtn.addEventListener('click', toggleDropdown);
-           // Клик вне области закрывает дропдаун
-           document.addEventListener('click', function(event) {
-               const wrapper = document.getElementById('spotWrapper');
-               if (wrapper && !wrapper.contains(event.target)) {
-                   closeDropdown();
-               }
-           });
-           // Не даем закрывать при клике внутри дропдауна, но ссылки должны работать
-           spotsDropdown.addEventListener('click', function(e) {
-               // Если клик по ссылке — разрешаем переход, дропдаун закроется после перехода
-               // но мы не должны закрывать мгновенно чтобы не мешать навигации. Однако эстетично.
-               // Но чтобы после клика дропдаун исчезал — добавим таймаут или сразу закроем, но т.к. страница может перегрузиться,
-               // просто закрываем без задержки. Для лучшего UX закроем перед переходом.
-               if (e.target.closest('.spot-link')) {
-                   // дадим возможность браузеру обработать переход, но дропдаун закроем
-                   closeDropdown();
-                   // не предотвращаем переход
-               }
-           });
-       }
-
-   </script>
-
-    <!--<meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Непростой график D3.js</title>
-    <script src="{{ url_for('static', filename='d3.v7.min.js')}}"></script>
-    <style>
-        .line {
-            fill: none;
-            stroke: steelblue;
-            stroke-width: 2px;
+        function closeDropdown() {
+            if (spotsDropdown) spotsDropdown.classList.remove('open');
         }
-    </style>
-</head>
-<body>
-    <svg id="chart"></svg>
-    <script src="{{ url_for('static', filename='script-deep.js')}}"></script>-->
+
+        function toggleDropdown(e) {
+            e.stopPropagation();
+            if (spotsDropdown.classList.contains('open')) {
+                closeDropdown();
+            } else {
+                spotsDropdown.classList.add('open');
+            }
+        }
+
+        if (spotToggleBtn && spotsDropdown) {
+            spotToggleBtn.addEventListener('click', toggleDropdown);
+            document.addEventListener('click', function(event) {
+                const wrapper = document.getElementById('spotWrapper');
+                if (wrapper && !wrapper.contains(event.target)) {
+                    closeDropdown();
+                }
+            });
+            spotsDropdown.addEventListener('click', function(e) {
+                if (e.target.closest('.spot-link')) {
+                    closeDropdown();
+                }
+            });
+        }
+    </script>
 </body>
 </html>

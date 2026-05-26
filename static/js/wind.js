@@ -1,4 +1,4 @@
-const drawWind = (data, dict, heightScale) => {
+const drawWind = (svg, data, dict, heightScale) => {
     // === НАСТРОЙКИ ===
     const windPanelOffset = 30;
     const arrowLength = 18;
@@ -34,18 +34,23 @@ const drawWind = (data, dict, heightScale) => {
         return "ссз";
     }
 
-    d3.select("#wind-container").selectAll("*").remove();
+    /*d3.select("#wind-container").selectAll("*").remove();
 
     const svg = d3.select("#wind-container")
         .append('svg')
         .attr("width", 200)
         .attr("height", dict.height+80);
 
-    svg.selectAll("*").remove();
+    svg.selectAll("wind-panel").remove();*/
+
+    svg.selectAll(".wind-panel").remove();
+
+    const WIND_START = 650;
 
     // === SVG ГРУППА ===
     const windGroup = svg.append("g")
-        .attr("class", "wind-panel");
+        .attr("class", "wind-panel")
+        .attr("transform", `translate(${WIND_START},0)`);
 
     let width = 10
     let height = dict.height
@@ -65,11 +70,13 @@ const drawWind = (data, dict, heightScale) => {
     .filter((d, i) => i % levelStep === 0)
     .filter(d => d.wind_u !== null)
     .forEach(d => {
-        const y = heightScale(d.height) + 30;
+        const y = heightScale(d.height);
 
         const speed = windSpeed(d.wind_u, d.wind_v);
         const dir = windDirection(d.wind_u, d.wind_v);
         const compass = degToCompass(dir);
+        console.log('dir', dir);
+
 
         const color = '#000000';
 
@@ -78,8 +85,11 @@ const drawWind = (data, dict, heightScale) => {
         const x1 = panelX;
         const y1 = y;
 
-        const x2 = x1 + arrowLength * Math.sin(angle);
-        const y2 = y1 + arrowLength * Math.cos(angle);
+        //const x2 = x1 + arrowLength * Math.sin(angle);
+        //const y2 = y1 + arrowLength * Math.cos(angle);
+
+        const x2 = x1 + arrowLength * Math.cos(angle - Math.PI/2);
+        const y2 = y1 + arrowLength * Math.sin(angle - Math.PI/2);
 
         // линия
         windGroup.append("line")
@@ -97,16 +107,16 @@ const drawWind = (data, dict, heightScale) => {
         windGroup.append("line")
         .attr("x1", x2)
         .attr("y1", y2)
-        .attr("x2", x2 - headSize * Math.sin(angle - Math.PI / 6))
-        .attr("y2", y2 - headSize * Math.cos(angle - Math.PI / 6))
+        .attr("x2", x2 - headSize * Math.cos(angle - Math.PI/2 - Math.PI / 6))
+        .attr("y2", y2 - headSize * Math.sin(angle - Math.PI/2 - Math.PI / 6))
         .attr("stroke", color)
         .attr("stroke-width", 1.5);
 
         windGroup.append("line")
         .attr("x1", x2)
         .attr("y1", y2)
-        .attr("x2", x2 - headSize * Math.sin(angle + Math.PI / 6))
-        .attr("y2", y2 - headSize * Math.cos(angle + Math.PI / 6))
+        .attr("x2", x2 - headSize * Math.cos(angle - Math.PI/2 + Math.PI / 6))
+        .attr("y2", y2 - headSize * Math.sin(angle - Math.PI/2 + Math.PI / 6))
         .attr("stroke", color)
         .attr("stroke-width", 1.5);
 

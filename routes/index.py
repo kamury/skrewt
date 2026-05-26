@@ -14,3 +14,12 @@ def index():
     except Exception as e:
         app.logger.info(f'Error: {e}')
         return jsonify({"error": f'Error: {e}'}),500
+
+@app.route('/<int:spot_id>', methods=['GET'])
+def show_sounding(spot_id):
+    try:
+        stations = get_all_stations()
+        return render_template('index.html', stations=stations)
+    except Exception as e:
+        app.logger.info(f'Error: {e}')
+        return jsonify({"error": f'Error: {e}'}),500

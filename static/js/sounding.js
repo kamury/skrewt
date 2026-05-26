@@ -30,6 +30,17 @@ const loadData = (url) => {
 const render = (data, i, svg, dict, tempScale, heightScale, stratificationLine, dewpointLine) => {
     let graphdata = []
 
+    const request_date = new Date(i);
+    const formattedDate = request_date.toLocaleDateString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit'
+    }).replace(/\//g, '.');
+
+    d3.select("#current_request_datetime").text(formattedDate);
+
+
     if (dict.highScale && dict.highScale < 12000) {
         //выбираем только те данные, которые меньше выбранной высоты highScale
         data[i].forEach(function(d) {
@@ -42,7 +53,7 @@ const render = (data, i, svg, dict, tempScale, heightScale, stratificationLine, 
     }
 
     //рисуем ветер
-    drawWind(graphdata, dict, heightScale);
+    drawWind(svg, graphdata, dict, heightScale);
 
     //рисуем диаграмму
     svg.selectAll(".stratificationLine").remove();
@@ -165,8 +176,20 @@ const drawGraphics = (full_data, svg, dict, tempScale, heightScale, stratificati
     let data = full_data['data']
     let dates = full_data['dates']
 
-    console.log(dates)
-    console.log(full_data)
+    console.log(data[dates[0]][0]);
+
+    const request_date = new Date(data[dates[0]][0]['request_date']);
+    const formattedDate = request_date.toLocaleDateString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    }).replace(/\//g, '.');
+
+    d3.select("#request_date").text(formattedDate);
+
+    d3.select("#request_time").text(data[dates[0]][0]['request_time']);
+
+    console.log(123, formattedDate)
 
     render(data, dates[0], svg, dict, tempScale, heightScale, stratificationLine, dewpointLine);
 

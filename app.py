@@ -4,7 +4,7 @@ import math
 import numpy as np
 import config, db
 import models
-from routes.api import api_bp
+from routes.api import api_bp, load_by_cron
 
 name = 'main'
 app = Flask(name)
@@ -31,6 +31,11 @@ def soundingForSpot(spot_id):
 @app.route('/<int:spot_id>/')
 def soundingForSpotWithSlash(spot_id):
     return soundingForSpot(spot_id)
+
+@app.cli.command("collect-data")
+def collect_data_command():
+  load_by_cron()
+  return
 
 if name == 'main':
   app.run(debug=True)

@@ -17,7 +17,7 @@ const tan = width / height;
 
 //получаем все данные
 loadData(url).then(function(data) {
-    //console.log(12345, data)
+    console.log(12345, data)
     console.log(data['data'][data['dates'][0]][0]['temp'])
     console.log(data['data'][data['dates'][0]][0]['height'])
 
@@ -31,17 +31,17 @@ loadData(url).then(function(data) {
 
     if (highScale == 3500) {
         height_top = 3500
-        temp_base = surface_temp-15;//15;
-        temp_top = surface_temp+10;//40;
+        temp_base = surface_temp-10;//15;
+        temp_top = surface_temp+15;//40;
     } else if (highScale == 6000) {
         height_top = 6000
-        temp_base = surface_temp-30;
-        temp_top = surface_temp+10;
+        temp_base = surface_temp-25;
+        temp_top = surface_temp+15;
         //temp_base = 0;
         //temp_top = 40;
     } else {
-        temp_base = surface_temp -70
-        temp_top = surface_temp + 10
+        temp_base = surface_temp -65
+        temp_top = surface_temp + 15
         //let temp_base = -40;
         //let temp_top = 60;
     }
@@ -62,12 +62,16 @@ loadData(url).then(function(data) {
 
     const svg = d3.select("#skewt-container")
         .append("svg")
+        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("preserveAspectRatio", "xMidYMid meet")
+        .style("width", "100%")
+        .style("height", "100%")
         //.attr("width", width)
         //.attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Log scale for pressure (OY)
+    // Log scale for height (OY)
     const heightScale = d3.scaleLinear()  //d3.scaleLog()
         .domain([height_base, height_top])  // От 1050 гПа до 100 гПа
         .range([height, 0]);
@@ -77,7 +81,7 @@ loadData(url).then(function(data) {
         .domain([temp_base, temp_top])    // От -40°C до +40°C
         .range([0, width]);
 
-    // Pressure axis (logariphmic)
+    // Height axis (logariphmic)
     svg.append("g")
         .call(d3.axisLeft(heightScale).tickFormat(d => `${d} м`))
         //pressure lines
@@ -85,6 +89,13 @@ loadData(url).then(function(data) {
             .attr("x2", width)
             .attr('class', 'pressureLines'))
         .call(g => g.select(".domain").remove());
+
+    // Правая ось — только подписи, без линий
+    svg.append("g")
+        .attr("transform", `translate(${width}, 0)`)
+        .call(d3.axisRight(heightScale).tickFormat(d => `${d} м`))
+        .call(g => g.selectAll(".tick line").remove())  // удаляем линии
+        .call(g => g.select(".domain").remove());       // удаляем ось-рамку
 
     // Temp axis
     svg.append("g")
