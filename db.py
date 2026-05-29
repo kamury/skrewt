@@ -16,6 +16,12 @@ def get_db():
     if 'db' not in g:
         # mysql.connection использует current_app внутри себя
         g.db = mysql.connection
+    else:
+        try:
+            g.db.ping(True)
+        except:
+            # Если ping не сработал - пересоздаём
+            g.db = mysql.connection
     return g.db
     
 def query_db(query, args=(), one=False):
