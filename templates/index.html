@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Аэрологическая диаграмма. {{ spot.title }}.</title>
+    <meta name="description" content="Аэрологическая диаграмма для парапланерных спотов по данным с сайта NOAA в косоугольной проекции." />
     
     <!-- Внешние скрипты и стили -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <script src="/static/js/d3.v7.min.js"></script>
     <link rel="stylesheet" href="/static/css/slider.css">
     
@@ -327,7 +329,7 @@
                 </a>
                 <h1>Аэрологическая диаграмма. {{ spot.title }}.</h1>
                 <div class="sub">
-                    📡 GFS, данные от <span id="request_time">-</span> часов <span id="request_date">обновляется..</span>
+                    📡 GFS, данные от <span id="request_time">-</span> часов UTC <span id="request_date">обновляется..</span>
                 </div>
             </div>
             <div class="spot-btn-wrapper" id="spotWrapper">
@@ -368,6 +370,12 @@
         <div id="current_request_datetime">
         </div>
 
+        <div style="float: right;">
+            <button id="parcelDown">-1°</button>
+            Перегрев пузыря <span id="parcelStep">3</span>°
+            <button id="parcelUp">+1°</button>
+        </div>
+
         <!-- Слайдер -->
         <div class="slider-section">
             <div class="container">
@@ -379,6 +387,10 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div>Поддержать проект - подписывайтесь на канал в Telegram 
+        <a href="https://t.me/psyho_it">@phyho_it</a>
     </div>
 
     <!-- Скрипты -->

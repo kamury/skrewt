@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 LOG_FILE = '/home/m/mymysewi/meteo.xcmonsters.com/debug.log'
 
 def get_all_spots():
-    return query_db('SELECT * FROM spots')
+    return query_db('SELECT * FROM spots ORDER by title ASC')
 
 def get_spot_by_id(id):
     return query_db('SELECT * FROM spots WHERE id=%s', [id], one=True)
@@ -12,7 +12,7 @@ def get_spot_by_id(id):
 def is_active_spot(spot_id):
     last_datetime = query_db('SELECT last_request FROM spots WHERE id=%s', [spot_id], one=True)
     now = datetime.now()
-    return (now - last_datetime['last_request']) < timedelta(days=14)
+    return (now - last_datetime['last_request']) < timedelta(days=3)
 
 def set_spot_as_active(spot_id):
     return query_db('UPDATE spots SET last_request=%s WHERE id=%s', [datetime.now(), spot_id], one=True)
@@ -31,7 +31,7 @@ def get_actual_sounding_data(spot_id):
         print(1111, last_request_datetime, utc_now)
         #если есть свежие данные
         #if ((utc_now - request_datetime) < timedelta(hours=10)):
-        if ((utc_now - last_request_datetime) < timedelta(hours=14)):
+        if ((utc_now - last_request_datetime) < timedelta(hours=312)):
             index = hours.index(result['request_time'])
             if index:
                 prev_request_time = hours[index - 1]

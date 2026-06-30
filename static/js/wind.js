@@ -45,7 +45,7 @@ const drawWind = (svg, data, dict, heightScale) => {
 
     svg.selectAll(".wind-panel").remove();
 
-    const WIND_START = 650;
+    const WIND_START = 680;
 
     // === SVG ГРУППА ===
     const windGroup = svg.append("g")
@@ -75,8 +75,6 @@ const drawWind = (svg, data, dict, heightScale) => {
         const speed = windSpeed(d.wind_u, d.wind_v);
         const dir = windDirection(d.wind_u, d.wind_v);
         const compass = degToCompass(dir);
-        console.log('dir', dir);
-
 
         const color = '#000000';
 
@@ -99,7 +97,7 @@ const drawWind = (svg, data, dict, heightScale) => {
             .attr("y2", y2)
             .attr("stroke", color)
             .attr("stroke-width", 1.5)
-            .attr("stroke-linecap", "round");
+            .attr("stroke-linecap", "butt");
 
         // наконечник
         const headSize = 5;
@@ -124,14 +122,14 @@ const drawWind = (svg, data, dict, heightScale) => {
         windGroup.append("circle")
         .attr("cx", x1)
         .attr("cy", y1)
-        .attr("r", 2)
+        .attr("r", 1.5)
         .attr("fill", color);
 
         // подпись
         windGroup.append("text")
         .attr("x", panelX + 28)
         .attr("y", y1 + 3)
-        .text(`${speed.toFixed(1)} м/с ${compass}`)
+        .text(`${speed.toFixed(1)} ${compass}`)
         .attr("font-size", "10px")
         .attr("fill", color);
     });

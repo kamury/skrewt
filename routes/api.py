@@ -156,25 +156,31 @@ def get_actual_sounding_data(spot_id):
 
 def load_in_background(spot_id, app):
     with app.app_context():
-        load_by_cron(spot_id)
+        load_by_spot(spot_id)
 
 @api_bp.route('/load', methods=['GET'])
-def load_by_cron(spot_id = 0):
+def load_by_cron(odd):
     
-    if spot_id:
-        spot = models.get_spot_by_id(spot_id)
-        if spot: 
-            load_by_spot(spot)
-            return jsonify(spot)
-        else:
-            return jsonify({})
-    else:
-        spots = models.get_all_spots()
-        for spot in spots:
-            load_by_spot(spot)
-        return jsonify(spots)
+    spots = models.get_all_spots()
 
-def load_by_spot(spot):
+    if odd:
+        spots = [item for item in spots if item['id'] % 2 != 0]
+    else:
+        spots = [item for item in spots if item['id'] % 2 == 0]
+        
+    for spot in spots:
+        load_spot_forecast(spot)
+    
+    return jsonify(spots)
+
+def load_by_spot(spot_id: int):
+    spot = models.get_spot_by_id(spot_id)
+
+    if spot:
+        load_spot_forecast(spot)
+    
+
+def load_spot_forecast(spot):
     hours = [0, 6, 12, 18]
     local_hours = [0, 9, 12, 15, 18]
 

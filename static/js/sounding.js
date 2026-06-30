@@ -2,15 +2,10 @@ import { drawWind } from "./wind.js";
 import { moistAdiabatProfile } from "./grid.js";
 
 const loadData = (url) => {
-    console.log('url3', url, url.pathname);
+    const match = url.pathname.match(/\d+/);
+    const spot_id = match ? parseInt(match[0], 10) : 1;
 
-    let spot_id = 1;
-    /*return new Promise(function(resolve, reject) {
-        d3.json(url).
-        then(function(data) {
-            return resolve(data);
-        });
-    });*/
+    console.log('url3', url, url.pathname, spot_id);
 
     return new Promise(function(resolve, reject) {
         fetch(`/api/` + spot_id).
@@ -75,6 +70,10 @@ const render = (data, i, svg, dict, tempScale, heightScale, stratificationLine, 
         .attr("stroke-width", 2)
         .attr("d", dewpointLine);
 
+    drawParcelPath(svg, data, i, dict, tempScale, heightScale);
+}
+
+const drawParcelPath = (svg, data, i, dict, tempScale, heightScale, step = 3) => {
     // ============================================
     // Кривая состояния
     // ============================================
@@ -87,7 +86,7 @@ const render = (data, i, svg, dict, tempScale, heightScale, stratificationLine, 
     let surface_temp = Math.round(data[i][0]['temp']) - dict.tempK
     let surface_dew = Math.round(data[i][0]['dewpoint']) - dict.tempK
     
-    const t09 = surface_temp + 3
+    const t09 = surface_temp + step
     const t02 = surface_dew
 
     //точка пересечения (верх треугольника)
@@ -147,13 +146,22 @@ const render = (data, i, svg, dict, tempScale, heightScale, stratificationLine, 
     }
 
     const min = data[i][index];
-    const max = data[i][index+1];
+    let max = data[i][index+1];
+
+    //очкень странный костыль. Иногда одна и та же строка повторяется 2 раза, тогда просто берем следующую
+    if (max.height == min.height) {
+        max = data[i][index+2];
+    }
 
     //формула считаем скорость измения температуры с высотой
     const grad = (max.temp - min.temp) / (max.height - min.height)
     //считаем предполагаемую температуру кривой стратификауии на высоте базы (верх треугольника) 
     //добавляем погрешность 1.5 градуса, чтобы когда кривая стратификации близко, все равно рисовать
     const estimated_temp = (min.temp - dict.tempK) + ((last.height - min.height) * grad) - 1.5
+
+    console.log('grad', grad,'min', min, 'max', max);
+
+    console.log('estimated', estimated_temp, 'last', last.temp);
 
     //если наша температура больше или равна предполагаемой, рисуем по влажной адиабате
     if (estimated_temp < last.temp) {
@@ -165,14 +173,24 @@ const render = (data, i, svg, dict, tempScale, heightScale, stratificationLine, 
             .attr("fill", "none")
             .attr("class", "state_blue");
     }
+
+    d3.select("#parcelStep").text(step);
+    //document.getElementById("parcelStep").textContent = step;
+
+    //для стрелочек кривой состояния
+    const parcelDown = document.getElementById('parcelDown');
+    const parcelUp = document.getElementById('parcelUp');
+
+    parcelDown.addEventListener('click', (e) => {
+        drawParcelPath(svg, data, i, dict, tempScale, heightScale, step-1);
+    });
+
+    parcelUp.addEventListener('click', (e) => {
+        drawParcelPath(svg, data, i, dict, tempScale, heightScale, step+1);
+    });
 }
 
 const drawGraphics = (full_data, svg, dict, tempScale, heightScale, stratificationLine, dewpointLine) => {
-
-    if (!Object.keys(full_data).length) {
-        alert("Пока нет данных! Возможно, погоду на этом споте давно никто не смотрел. Заходите через пару минут, и они появятся!")
-    }
-
     let data = full_data['data']
     let dates = full_data['dates']
 

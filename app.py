@@ -32,9 +32,14 @@ def soundingForSpot(spot_id):
 def soundingForSpotWithSlash(spot_id):
     return soundingForSpot(spot_id)
 
-@app.cli.command("collect-data")
-def collect_data_command():
-  load_by_cron()
+@app.cli.command("collect_odd_data")
+def collect_odd_data_command():
+  load_by_cron(1)
+  return
+
+@app.cli.command("collect_even_data")
+def collect_even_data_command():
+  load_by_cron(0)
   return
 
 if name == 'main':

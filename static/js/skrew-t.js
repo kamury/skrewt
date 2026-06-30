@@ -18,8 +18,11 @@ const tan = width / height;
 //получаем все данные
 loadData(url).then(function(data) {
     console.log(12345, data)
-    console.log(data['data'][data['dates'][0]][0]['temp'])
-    console.log(data['data'][data['dates'][0]][0]['height'])
+
+    if (!Object.keys(data).length) {
+        alert("Пока нет данных! Возможно, погоду на этом споте давно никто не смотрел. Заходите через 5-7 минут, и они появятся!");
+        return;
+    }
 
     //получаем из данных температуру и точку росы на поверхности (первое значение в массиве)
     let surface_temp = Math.round(data['data'][data['dates'][0]][0]['temp']) - tempK
