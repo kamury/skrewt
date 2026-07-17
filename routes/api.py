@@ -173,6 +173,21 @@ def load_by_cron(odd):
     
     return jsonify(spots)
 
+def get_elevation(point_lat, point_lon):
+    #высота точки по координатам через Open-Meteo Elevation API (Copernicus DEM 90m)
+    try:
+        response = requests.get(
+            'https://api.open-meteo.com/v1/elevation',
+            params={'latitude': point_lat, 'longitude': point_lon},
+            timeout=10
+        )
+        response.raise_for_status()
+        return float(response.json()['elevation'][0])
+    except Exception as e:
+        with open(LOG_FILE, 'a') as f:
+            f.write(f"elevation api error {str(e)}\n")
+        return None
+
 def load_by_spot(spot_id: int):
     spot = models.get_spot_by_id(spot_id)
 
@@ -202,12 +217,16 @@ def load_spot_forecast(spot):
     lon = int(spot['longtitude'])
     hour_timezone = (noaa_hour + spot['timezone']) % 24
 
+    #высота споты по координатам, если API недоступен — посчитается из GRIB
+    point_height = get_elevation(spot['latitude'], spot['longtitude'])
+
     url = f"https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25_1hr.pl?dir=%2Fgfs.{noaa_date_url}%2F{noaa_hour:02d}%2Fatmos&file=gfs.t{noaa_hour:02d}z.pgrb2.0p25.anl&var_RH=on&var_TMP=on&var_UGRD=on&var_VGRD=on&var_LAND=on&var_HGT=on&var_PRES=on&lev_1829_m_above_mean_sea_level=on&lev_2743_m_above_mean_sea_level=on&lev_3658_m_above_mean_sea_level=on&lev_100_m_above_ground=on&lev_1000_mb=on&lev_975_mb=on&lev_950_mb=on&lev_925_mb=on&lev_900_mb=on&lev_850_mb=on&lev_800_mb=on&lev_750_mb=on&lev_700_mb=on&lev_650_mb=on&lev_600_mb=on&lev_550_mb=on&lev_500_mb=on&lev_450_mb=on&lev_400_mb=on&lev_350_mb=on&lev_300_mb=on&lev_250_mb=on&lev_200_mb=on&lev_150_mb=on&lev_100_mb=on&lev_surface=on&lev_max_wind=on&lev_mean_sea_level=on&lev_boundary_layer_cloud_layer=on&lev_convective_cloud_layer=on&lev_convective_cloud_bottom_level=on&lev_convective_cloud_top_level=on&lev_high_cloud_layer=on&lev_high_cloud_bottom_level=on&lev_high_cloud_top_level=on&lev_low_cloud_layer=on&lev_low_cloud_bottom_level=on&lev_low_cloud_top_level=on&lev_middle_cloud_layer=on&lev_middle_cloud_bottom_level=on&lev_middle_cloud_top_level=on&subregion=&toplat={lat+1}&leftlon={lon}&rightlon={lon+1}&bottomlat={lat}"
     
     try:
         #читаем гриб, пишем данные в табличку
-        data = read_grib(url, spot['latitude'], spot['longtitude'])
+        data = read_grib(url, spot['latitude'], spot['longtitude'], point_height)
     except Exception as e:
+        print(url, spot)
         with open(LOG_FILE, 'a') as f:
             f.write(f"error {str(e)}\n")
         import traceback
@@ -246,7 +265,7 @@ def load_spot_forecast(spot):
         
         try:
             #читаем гриб, пишем данные в табличку
-            data = read_grib(url, spot['latitude'], spot['longtitude'])
+            data = read_grib(url, spot['latitude'], spot['longtitude'], point_height)
         except Exception as e:
             with open(LOG_FILE, 'a') as f:
                 f.write(f"error {str(e)}\n")
@@ -269,7 +288,7 @@ def load_spot_forecast(spot):
             
             try:
                 #читаем гриб, пишем данные в табличку
-                data = read_grib(url, spot['latitude'], spot['longtitude'])
+                data = read_grib(url, spot['latitude'], spot['longtitude'], point_height)
             except Exception as e:
                 with open(LOG_FILE, 'a') as f:
                     f.write(f"error {str(e)}\n")
@@ -307,7 +326,7 @@ def get_dd():
     })
     return jsonify(models.save_forecast(data))
     
-def  read_grib(url, point_lat, point_lon):
+def  read_grib(url, point_lat, point_lon, point_height=None):
     print('read', url)
 
     response = requests.get(url)
@@ -362,9 +381,10 @@ def  read_grib(url, point_lat, point_lon):
 
         indexes = [[lat_ind, lon_ind], [lat_ind, lon_ind25], [lat_ind25, lon_ind], [lat_ind25, lon_ind25]]
 
-    #находим высоту поверхности
-    z_surface = grbs.select(shortName='orog', typeOfLevel='surface')[0]
-    point_height = get_average_value(z_surface, indexes, distances)
+    #высота поверхности: если не пришла из API рельефа, берем среднее орографии из GRIB
+    if point_height is None:
+        z_surface = grbs.select(shortName='orog', typeOfLevel='surface')[0]
+        point_height = get_average_value(z_surface, indexes, distances)
     
     data = []
     dewpoints = {}

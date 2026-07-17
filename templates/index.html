@@ -47,6 +47,10 @@
             background: #fefefe;
         }
 
+        .title-logo {
+            width: 200px;
+        }
+
         .title-section h1 {
             font-size: 1.9rem;
             font-weight: 700;
@@ -132,12 +136,24 @@
         }
 
         /* ========== ПАНЕЛЬ ВЫСОТ ========== */
+        /* На десктопе — отдельная строка под шапкой (order + flex-basis:100%). */
+        .title-section {
+            order: 1;
+        }
+
+        .spot-btn-wrapper {
+            order: 2;
+        }
+
         .heights-panel {
-            padding: 18px 28px 8px 28px;
+            order: 3;
+            flex-basis: 100%;
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            border-bottom: 1px solid #ecf3f7;
+            padding-top: 14px;
+            margin-top: 4px;
+            border-top: 1px solid #ecf3f7;
         }
 
         .height-btn {
@@ -162,6 +178,119 @@
 
         .height-btn:hover:not(.active) {
             background: #e3eff7;
+        }
+
+        /* ========== ТАБЫ ДНЕЙ (СЛАЙДЕР) ========== */
+        .day-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .day-tab {
+            flex: 0 0 auto;
+            background: #f3f9fe;
+            border: 1px solid #cfe0ea;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2c647f;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .day-tab.active {
+            background: #1f6e8c;
+            border-color: #1f6e8c;
+            color: white;
+        }
+
+        .day-tab:hover:not(.active) {
+            background: #e3eff7;
+        }
+
+        @media (max-width: 600px) {
+            .day-tabs {
+                flex-wrap: nowrap;
+                gap: 6px;
+            }
+            .day-tab {
+                flex: 1 1 0;
+                padding: 8px 4px;
+                font-size: 0.75rem;
+                text-align: center;
+                white-space: normal;
+                line-height: 1.25;
+            }
+        }
+
+        /* ========== СТЕППЕР "ПЕРЕГРЕВ ПУЗЫРЯ" ========== */
+        .controls-row {
+            display: flex;
+            justify-content: flex-end;
+            /* верхний отступ растет с шириной экрана: у графика overflow:visible,
+               и подписи нижней оси физически рисуются за пределами viewBox */
+            padding: clamp(16px, 6vw, 80px) 28px 0 28px;
+        }
+
+        .parcel-control {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #f3f9fe;
+            border: 1px solid #cfe0ea;
+            border-radius: 40px;
+            padding: 6px 8px 6px 18px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2c647f;
+        }
+
+        .parcel-btn {
+            width: 30px;
+            height: 30px;
+            flex: 0 0 auto;
+            border-radius: 50%;
+            border: none;
+            background: #1f6e8c;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 700;
+            line-height: 1;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: all 0.2s;
+        }
+
+        .parcel-btn:hover {
+            background: #185a73;
+        }
+
+        #parcelStep {
+            color: #1f6e8c;
+            font-weight: 700;
+        }
+
+        @media (max-width: 600px) {
+            .controls-row {
+                padding: 12px 20px 0 20px;
+            }
+            .parcel-control {
+                font-size: 0.78rem;
+                gap: 8px;
+                padding: 5px 6px 5px 14px;
+            }
+            .parcel-btn {
+                width: 26px;
+                height: 26px;
+                font-size: 0.8rem;
+            }
         }
 
         /* ========== ОСНОВНОЙ БЛОК: ГРАФИК + ВЕТЕР ========== */
@@ -254,14 +383,43 @@
 
         @media (max-width: 480px) {
             .header {
-                flex-direction: column;
-                gap: 12px;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 6px 10px;
+                padding: 14px 20px 10px 20px;
             }
+            /* Заголовок — на всю ширину, своей строкой */
+            .title-section {
+                order: 1;
+                flex-basis: 100%;
+            }
+            .title-logo {
+                width: 120px;
+            }
+            .title-section h1 {
+                font-size: 1.2rem;
+                margin-bottom: 2px;
+            }
+            /* Спот — сначала, компактно; высоты — после, во второй строке */
             .spot-btn-wrapper {
-                align-self: flex-start;
+                order: 2;
+                flex: 0 0 auto;
+            }
+            .heights-panel {
+                order: 3;
+                flex-basis: auto;
+                flex: 1 1 auto;
+                gap: 6px;
+                padding: 0;
+                margin-top: 0;
+                border-top: none;
             }
             .height-btn {
-                padding: 6px 14px;
+                padding: 6px 10px;
+                font-size: 0.75rem;
+            }
+            .spot-button {
+                padding: 8px 14px;
                 font-size: 0.8rem;
             }
             .wind-wrapper {
@@ -325,13 +483,21 @@
         <div class="header">
             <div class="title-section">
                 <a href="https://xcmonsters.com">
-                    <img style="width: 200px;" src="/static/img/xcmonsters.jpg" />
+                    <img class="title-logo" src="/static/img/xcmonsters.jpg" />
                 </a>
                 <h1>Аэрологическая диаграмма. {{ spot.title }}.</h1>
                 <div class="sub">
                     📡 GFS, данные от <span id="request_time">-</span> часов UTC <span id="request_date">обновляется..</span>
                 </div>
             </div>
+
+            <!-- Панель высот -->
+            <div class="heights-panel">
+                <a href="/{{ spot.id }}/?scale=3500" class="height-btn {% if current_scale == '3500' %}active{% endif %}">3,5 км</a>
+                <a href="/{{ spot.id }}/?scale=6000" class="height-btn {% if current_scale == '6000' %}active{% endif %}">6 км</a>
+                <a href="/{{ spot.id }}/?scale=12000" class="height-btn {% if current_scale == '12000' %}active{% endif %}" data-height="12000">12 км</a>
+            </div>
+
             <div class="spot-btn-wrapper" id="spotWrapper">
                 <button class="spot-button" id="spotToggleBtn">
                     <span class="spot-icon">📍</span> Выбрать спот <span style="font-size:1rem;">⌵</span>
@@ -348,13 +514,6 @@
             </div>
         </div>
 
-        <!-- Панель высот -->
-        <div class="heights-panel">
-            <a href="/{{ spot.id }}/?scale=3500" class="height-btn {% if current_scale == '3500' %}active{% endif %}">3,5 км</a>
-            <a href="/{{ spot.id }}/?scale=6000" class="height-btn {% if current_scale == '6000' %}active{% endif %}">6 км</a>
-            <a href="/{{ spot.id }}/?scale=12000" class="height-btn {% if current_scale == '12000' %}active{% endif %}" data-height="12000">12 км</a>
-        </div>
-
         <!-- Основной ряд: график + ветер -->
         <div class="main-row">
             <div class="chart-wrapper">
@@ -367,17 +526,17 @@
             </div>
         </div>
 
-        <div id="current_request_datetime">
-        </div>
-
-        <div style="float: right;">
-            <button id="parcelDown">-1°</button>
-            Перегрев пузыря <span id="parcelStep">3</span>°
-            <button id="parcelUp">+1°</button>
+        <div class="controls-row">
+            <div class="parcel-control">
+                <button type="button" id="parcelDown" class="parcel-btn" aria-label="Уменьшить перегрев">-1°</button>
+                <span>Перегрев пузыря <span id="parcelStep">3</span>°</span>
+                <button type="button" id="parcelUp" class="parcel-btn" aria-label="Увеличить перегрев">+1°</button>
+            </div>
         </div>
 
         <!-- Слайдер -->
         <div class="slider-section">
+            <div class="day-tabs" id="dayTabs"></div>
             <div class="container">
                 <div class="slider-wrapper">
                     <input type="range" id="timeSlider" min="0" max="100" step="0.1" value="0">
@@ -390,7 +549,7 @@
     </div>
 
     <div>Поддержать проект - подписывайтесь на канал в Telegram 
-        <a href="https://t.me/psyho_it">@phyho_it</a>
+        <a href="https://t.me/hello_mybody">@hello_mybody</a>
     </div>
 
     <!-- Скрипты -->

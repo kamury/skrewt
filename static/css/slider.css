@@ -49,6 +49,11 @@ input[type="range"]:focus {
     outline: none;
 }
 
+input[type="range"]:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 20px;
@@ -89,6 +94,12 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .slider-label:hover {
     background: #f0f0f0;
     color: #667eea;
+    font-weight: 500;
+}
+
+.slider-label.active {
+    background: #667eea;
+    color: white;
     font-weight: 500;
 }
 

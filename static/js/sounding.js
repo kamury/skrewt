@@ -33,9 +33,6 @@ const render = (data, i, svg, dict, tempScale, heightScale, stratificationLine, 
         hour: '2-digit'
     }).replace(/\//g, '.');
 
-    d3.select("#current_request_datetime").text(formattedDate);
-
-
     if (dict.highScale && dict.highScale < 12000) {
         //выбираем только те данные, которые меньше выбранной высоты highScale
         data[i].forEach(function(d) {
@@ -209,82 +206,140 @@ const drawGraphics = (full_data, svg, dict, tempScale, heightScale, stratificati
 
     console.log(123, formattedDate)
 
-    render(data, dates[0], svg, dict, tempScale, heightScale, stratificationLine, dewpointLine);
+    // Группируем даты по суткам (ключ YYYY-MM-DD), чтобы отдельно выбирать день,
+    // а слайдером листать только время внутри выбранных суток
+    const dayMap = new Map();
+    dates.forEach((date) => {
+        const dayKey = date.slice(0, 10);
+        if (!dayMap.has(dayKey)) dayMap.set(dayKey, []);
+        dayMap.get(dayKey).push(date);
+    });
+    const dayKeys = Array.from(dayMap.keys());
 
-    // Создаем метки на слайдере (каждую вторую)
     const slider = document.getElementById('timeSlider');
     const sliderLabels = document.getElementById('sliderLabels');
+    const trackMarkers = document.getElementById('trackMarkers');
     const tooltip = document.getElementById('tooltip');
-    const selectedDateSpan = document.getElementById('selectedDate');
+    const dayTabs = document.getElementById('dayTabs');
 
-    // Форматирование даты
-    function formatDate(dateStr) {
-        const d = new Date(dateStr);
-        return `${d.getDate()}.${d.getMonth()+1} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+    function formatDayLabel(dayKey) {
+        const d = new Date(`${dayKey}T00:00:00`);
+        const weekday = d.toLocaleDateString('ru-RU', { weekday: 'short' });
+        const dayMonth = d.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' });
+        return `${weekday}, ${dayMonth}`;
     }
 
-    // Размещаем метки
-    dates.forEach((date, index) => {
-        //черные метки
-        const trackMarkers = document.getElementById('trackMarkers');
-	    const marker = document.createElement('div');
-        marker.className = 'track-marker';
-        marker.style.left = `${(index / (dates.length - 1)) * 100}%`;
-        trackMarkers.appendChild(marker);
+    function formatTime(dateStr) {
+        const d = new Date(dateStr);
+        return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
 
-        // Показываем каждую вторую метку для читаемости
-        if (index % 2 === 0) {
-            const label = document.createElement('div');
-            label.className = 'slider-label';
-            label.textContent = formatDate(date);
-            label.style.left = `${(index / (dates.length - 1)) * 100}%`;
-            label.title = date; // полная дата в подсказке
-            
-            // Клик по метке
-            label.addEventListener('click', () => {
-                const percent = (index / (dates.length - 1)) * 100;
-                slider.value = percent;
-                //updateSelectedDate(index);
-                render(data, dates[index], svg, dict, tempScale, heightScale, stratificationLine, dewpointLine);
-            });
-            
-            sliderLabels.appendChild(label);
-        }
+    function percentForIndex(index, total) {
+        return total > 1 ? (index / (total - 1)) * 100 : 0;
+    }
 
-    });
+    let currentDayIndex = 0;
+    let dayDates = [];
 
-    // Поиск ближайшего индекса по проценту
+    function highlightLabel(index) {
+        sliderLabels.querySelectorAll('.slider-label').forEach((label) => {
+            label.classList.toggle('active', parseInt(label.dataset.index, 10) === index);
+        });
+    }
+
+    function selectTime(index) {
+        slider.value = percentForIndex(index, dayDates.length);
+        render(data, dayDates[index], svg, dict, tempScale, heightScale, stratificationLine, dewpointLine);
+        highlightLabel(index);
+    }
+
+    // Поиск ближайшего индекса внутри выбранного дня по проценту слайдера
     function findClosestIndex(percent) {
         let closestIndex = 0;
         let minDiff = Infinity;
-        
-        dates.forEach((_, index) => {
-            const labelPercent = (index / (dates.length - 1)) * 100;
+
+        dayDates.forEach((_, index) => {
+            const labelPercent = percentForIndex(index, dayDates.length);
             const diff = Math.abs(labelPercent - percent);
             if (diff < minDiff) {
                 minDiff = diff;
                 closestIndex = index;
             }
         });
-        
+
         return closestIndex;
     }
+
+    function buildSlider() {
+        dayDates = dayMap.get(dayKeys[currentDayIndex]);
+
+        sliderLabels.innerHTML = '';
+        trackMarkers.innerHTML = '';
+
+        const singlePoint = dayDates.length <= 1;
+        slider.disabled = singlePoint;
+
+        dayDates.forEach((date, index) => {
+            const percent = percentForIndex(index, dayDates.length);
+
+            const marker = document.createElement('div');
+            marker.className = 'track-marker';
+            marker.style.left = `${percent}%`;
+            trackMarkers.appendChild(marker);
+
+            const label = document.createElement('div');
+            label.className = 'slider-label';
+            label.textContent = formatTime(date);
+            label.style.left = `${percent}%`;
+            label.title = date;
+            label.dataset.index = index;
+
+            label.addEventListener('click', () => selectTime(index));
+
+            sliderLabels.appendChild(label);
+        });
+
+        selectTime(0);
+    }
+
+    function buildDayTabs() {
+        dayTabs.innerHTML = '';
+
+        dayKeys.forEach((dayKey, index) => {
+            const tab = document.createElement('button');
+            tab.type = 'button';
+            tab.className = 'day-tab' + (index === currentDayIndex ? ' active' : '');
+            tab.textContent = formatDayLabel(dayKey);
+
+            tab.addEventListener('click', () => {
+                if (currentDayIndex === index) return;
+                currentDayIndex = index;
+                dayTabs.querySelectorAll('.day-tab').forEach((t) => t.classList.remove('active'));
+                tab.classList.add('active');
+                buildSlider();
+            });
+
+            dayTabs.appendChild(tab);
+        });
+    }
+
+    buildDayTabs();
+    buildSlider();
 
     // Обработка движения мыши для подсказки
     slider.addEventListener('mousemove', (e) => {
         const rect = slider.getBoundingClientRect();
         const percent = ((e.clientX - rect.left) / rect.width) * 100;
         const clampedPercent = Math.min(Math.max(percent, 0), 100);
-        
+
         const index = findClosestIndex(clampedPercent);
-        const date = dates[index];
-        
+        const date = dayDates[index];
+
         // Позиционируем подсказку
         tooltip.style.display = 'block';
-        tooltip.textContent = formatDate(date);
-        
-        // Вычисляем позицию подсказки
-        const labelPercent = (index / (dates.length - 1)) * 100;
+        tooltip.textContent = formatTime(date);
+
+        const labelPercent = percentForIndex(index, dayDates.length);
         tooltip.style.left = `${labelPercent}%`;
         tooltip.style.bottom = '35px';
         tooltip.style.transform = 'translateX(-50%)';
@@ -298,48 +353,8 @@ const drawGraphics = (full_data, svg, dict, tempScale, heightScale, stratificati
     slider.addEventListener('input', (e) => {
         const percent = parseFloat(e.target.value);
         const index = findClosestIndex(percent);
-        const date = dates[index];
-        
-        //updateSelectedDate(index);
-        render(data, dates[index], svg, dict, tempScale, heightScale, stratificationLine, dewpointLine);
-        
-        // Подсвечиваем активную метку
-        document.querySelectorAll('.slider-label').forEach((label, i) => {
-            const labelIndex = i * 2; // так как показываем каждую вторую
-            if (labelIndex === index) {
-                label.style.background = '#667eea';
-                label.style.color = 'white';
-            } else {
-                label.style.background = '';
-                label.style.color = '#666';
-            }
-        });
+        selectTime(index);
     });
-
-     /*   //крутилка
-        d3.select("#timeRange")
-            .attr("type", "range")
-            .attr("min", 0)
-            .attr("max", dates.length - 1)
-            .attr("value", 0)
-            .on("input", function(v) {
-                console.log(v.target.value, dates[v.target.value])
-                render(data, dates[v.target.value], svg, dict, pressureScale, stratificationLine, dewpointLine);
-            });
-
-            const sliderLabels = document.getElementById("slider-labels");
-
-            dates.forEach((point, index) => {
-                if (index % 2 === 0) { // Показываем каждую вторую точку для читаемости
-                    const label = document.createElement("span");
-                    label.textContent = `${point}`;
-                    label.style.position = "relative";
-                    label.style.left = `${(index / (dates.length - 1)) * 100}%`;
-                    label.style.transform = "translateX(-50%)";
-                    sliderLabels.appendChild(label);
-                }
-            });*/
-
 }
 
 export { loadData, drawGraphics }
