@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{% block title %}Админка{% endblock %}</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #e9f0f5;
+            font-family: 'Segoe UI', 'Roboto', system-ui, -apple-system, 'Inter', sans-serif;
+            padding: 20px;
+            color: #1a2c3e;
+        }
+
+        .card {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .card.narrow { max-width: 420px; }
+
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: space-between;
+            align-items: center;
+            padding: 22px 26px;
+            border-bottom: 1px solid #e2edf2;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1f4e6e;
+        }
+
+        .content { padding: 22px 26px 26px 26px; }
+
+        /* ===== Кнопки ===== */
+        .btn {
+            display: inline-block;
+            background: #1f6e8c;
+            border: 1px solid #1f6e8c;
+            color: #ffffff;
+            padding: 9px 18px;
+            border-radius: 40px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn:hover { background: #185a73; }
+
+        .btn.secondary {
+            background: #f3f9fe;
+            border-color: #cfe0ea;
+            color: #2c647f;
+        }
+
+        .btn.secondary:hover { background: #e3eff7; }
+
+        /* ===== Таблица спотов ===== */
+        .table-wrap { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            text-align: left;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: #5b7f95;
+            padding: 8px 10px;
+            border-bottom: 1px solid #e2edf2;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #eef4f8;
+            vertical-align: middle;
+        }
+
+        tr.inactive td { color: #93a9b8; }
+
+        td.actions {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        td.actions form { display: inline; }
+        td.actions .btn + form { margin-left: 6px; }
+
+        td.nowrap { white-space: nowrap; }
+
+        .spot-title {
+            color: #1f6e8c;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+        .spot-title:hover { color: #185a73; }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge.on { background: #e2f4e8; color: #1f7a45; }
+        .badge.off { background: #f0f2f4; color: #7b8b98; }
+
+        /* ===== Формы ===== */
+        .field { margin-bottom: 16px; }
+
+        label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #5b7f95;
+            margin-bottom: 6px;
+        }
+
+        input[type=text], input[type=password], input[type=number] {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #cfe0ea;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: #1a2c3e;
+            background: #fbfdfe;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #1f6e8c;
+            background: #ffffff;
+        }
+
+        input[readonly] {
+            background: #f0f4f7;
+            color: #7b8b98;
+            cursor: not-allowed;
+        }
+
+        .hint {
+            font-size: 0.78rem;
+            color: #93a9b8;
+            margin-top: 5px;
+        }
+
+        .checkbox-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .checkbox-field input { width: 18px; height: 18px; cursor: pointer; }
+        .checkbox-field label { margin: 0; cursor: pointer; color: #1a2c3e; font-size: 0.92rem; }
+
+        .form-row { display: flex; flex-wrap: wrap; gap: 16px; }
+        .form-row .field { flex: 1 1 180px; margin-bottom: 16px; }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding-top: 8px;
+            border-top: 1px solid #eef4f8;
+            margin-top: 20px;
+        }
+
+        /* ===== Сообщения ===== */
+        .messages { margin-bottom: 18px; }
+
+        .message {
+            padding: 11px 16px;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            margin-bottom: 8px;
+            background: #e6f3ec;
+            color: #1f6b42;
+        }
+
+        .errors {
+            background: #fdeaea;
+            color: #a3282b;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            margin-bottom: 18px;
+        }
+
+        .errors ul { margin: 0; padding-left: 18px; }
+
+        .empty {
+            padding: 30px 10px;
+            text-align: center;
+            color: #93a9b8;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            .header { padding: 18px 18px; }
+            .content { padding: 18px; }
+            th, td { padding: 9px 6px; }
+        }
+    </style>
+</head>
+<body>
+    {% block body %}{% endblock %}
+</body>
+</html>

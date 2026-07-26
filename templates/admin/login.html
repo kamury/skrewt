@@ -1,0 +1,36 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Вход в админку{% endblock %}
+
+{% block body %}
+<div class="card narrow">
+    <div class="header">
+        <h1>Вход в админку</h1>
+    </div>
+    <div class="content">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="errors">
+                    {% for message in messages %}<div>{{ message }}</div>{% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="post">
+            <input type="hidden" name="next" value="{{ next }}">
+
+            <div class="field">
+                <label for="login">Логин</label>
+                <input type="text" id="login" name="login" autofocus autocomplete="username">
+            </div>
+
+            <div class="field">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn">Войти</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

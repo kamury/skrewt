@@ -3,19 +3,53 @@ from datetime import datetime, timedelta, timezone
 
 LOG_FILE = '/home/m/mymysewi/meteo.xcmonsters.com/debug.log'
 
+#в базе колонка называется Last_request с большой буквы, и SELECT * возвращает ключ
+#именно в таком написании. Алиас приводит его к last_request во всем коде.
+SPOT_FIELDS = 'id, title, latitude, longtitude, timezone, is_active, Last_request AS last_request'
+
 def get_all_spots():
-    return query_db('SELECT * FROM spots ORDER by title ASC')
+    #только включенные в админке — для публичного списка и сбора данных
+    return query_db(f'SELECT {SPOT_FIELDS} FROM spots WHERE is_active=1 ORDER by title ASC')
+
+def get_all_spots_for_admin():
+    #в админке видны все: сначала активные, потом отключенные, внутри по алфавиту
+    return query_db(f'SELECT {SPOT_FIELDS} FROM spots ORDER BY is_active DESC, title ASC')
 
 def get_spot_by_id(id):
-    return query_db('SELECT * FROM spots WHERE id=%s', [id], one=True)
+    return query_db(f'SELECT {SPOT_FIELDS} FROM spots WHERE id=%s', [id], one=True)
 
-def is_active_spot(spot_id):
-    last_datetime = query_db('SELECT last_request FROM spots WHERE id=%s', [spot_id], one=True)
-    now = datetime.now()
-    return (now - last_datetime['last_request']) < timedelta(days=3)
+def create_spot(title, latitude, longtitude, timezone, is_active, last_request):
+    return query_db(
+        'INSERT INTO spots (title, latitude, longtitude, timezone, is_active, Last_request) '
+        'VALUES (%s, %s, %s, %s, %s, %s)',
+        [title, latitude, longtitude, timezone, is_active, last_request])
 
-def set_spot_as_active(spot_id):
-    return query_db('UPDATE spots SET last_request=%s WHERE id=%s', [datetime.now(), spot_id], one=True)
+def update_spot(id, title, latitude, longtitude, timezone, is_active, last_request):
+    return query_db(
+        'UPDATE spots SET title=%s, latitude=%s, longtitude=%s, timezone=%s, is_active=%s, '
+        'Last_request=%s WHERE id=%s',
+        [title, latitude, longtitude, timezone, is_active, last_request, id])
+
+def set_spot_activity(id, is_active):
+    return query_db('UPDATE spots SET is_active=%s WHERE id=%s', [is_active, id])
+
+def check_admin_credentials(login, password):
+    #пароль лежит в базе открытым текстом, чтобы его можно было править руками
+    user = query_db('SELECT * FROM users WHERE login=%s', [login], one=True)
+    return bool(user) and user['password'] == password
+
+def is_spot_requested_recently(spot_id):
+    #по спотам, которые никто не открывал, прогноз не собираем
+    row = query_db('SELECT Last_request AS last_request FROM spots WHERE id=%s', [spot_id], one=True)
+
+    #колонка обнуляемая, пустое значение считаем за «давно не заходили»
+    if not row or not row['last_request']:
+        return False
+
+    return (datetime.now() - row['last_request']) < timedelta(days=3)
+
+def touch_spot_request_time(spot_id):
+    return query_db('UPDATE spots SET Last_request=%s WHERE id=%s', [datetime.now(), spot_id], one=True)
 
 def get_actual_sounding_data(spot_id):
     #получить дату последнего запроса для этого спота, если она меньше 12 часов назад, 

@@ -1,0 +1,89 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{% if is_new %}Новый спот{% else %}{{ spot.title }}{% endif %}{% endblock %}
+
+{% block body %}
+<div class="card">
+    <div class="header">
+        <h1>{% if is_new %}Новый спот{% else %}Редактирование спота{% endif %}</h1>
+        <a href="{{ url_for('admin.spots') }}" class="btn secondary">К списку</a>
+    </div>
+
+    <div class="content">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}<div class="message">{{ message }}</div>{% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% if errors %}
+            <div class="errors">
+                <ul>{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% if not is_new %}
+            <div class="field">
+                <label for="id">ID</label>
+                <input type="text" id="id" value="{{ spot.id }}" readonly>
+                <div class="hint">Менять нельзя, спот доступен по адресу /{{ spot.id }}</div>
+            </div>
+            {% endif %}
+
+            <div class="field">
+                <label for="title">Название</label>
+                <input type="text" id="title" name="title" value="{{ spot.title }}" autofocus>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label for="latitude">Широта</label>
+                    <input type="text" id="latitude" name="latitude" value="{{ spot.latitude }}">
+                    <div class="hint">От -90 до 90, например 45.8326</div>
+                </div>
+
+                <div class="field">
+                    <label for="longtitude">Долгота</label>
+                    <input type="text" id="longtitude" name="longtitude" value="{{ spot.longtitude }}">
+                    <div class="hint">От -180 до 180, например 6.8652</div>
+                </div>
+
+                <div class="field">
+                    <label for="timezone">Часовой пояс</label>
+                    <input type="text" id="timezone" name="timezone" value="{{ spot.timezone }}">
+                    <div class="hint">Сдвиг от UTC в часах, например 3</div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="last_request">Последний запрос</label>
+                <input type="datetime-local" id="last_request" name="last_request" value="{{ last_request_value }}">
+                <div class="hint">
+                    Проставляется само, когда кто-то открывает диаграмму спота. Если с этой даты
+                    прошло больше 3 дней, прогноз по споту не собирается. Пустое поле — то же самое,
+                    что «давно не заходили».
+                </div>
+            </div>
+
+            <div class="checkbox-field">
+                <input type="checkbox" id="is_active" name="is_active" {% if spot.is_active %}checked{% endif %}>
+                <label for="is_active">Спот активен</label>
+            </div>
+            <div class="hint" style="margin-bottom: 4px;">
+                Отключенный спот не виден в списке на сайте, по нему не собираются данные,
+                и он не попадает в sitemap. Остается доступен здесь, в админке.
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn">Сохранить</button>
+                {% if not is_new %}
+                <a href="/{{ spot.id }}" target="_blank" class="btn secondary">Открыть диаграмму</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Споты{% endblock %}
+
+{% block body %}
+<div class="card">
+    <div class="header">
+        <h1>Споты</h1>
+        <div>
+            <a href="{{ url_for('admin.create_spot') }}" class="btn">+ Добавить спот</a>
+            <a href="{{ url_for('admin.logout') }}" class="btn secondary">Выйти</a>
+        </div>
+    </div>
+
+    <div class="content">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}<div class="message">{{ message }}</div>{% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% if spots %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Широта</th>
+                        <th>Долгота</th>
+                        <th>Пояс</th>
+                        <th>Последний запрос</th>
+                        <th>Статус</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for spot in spots %}
+                    <tr {% if not spot.is_active %}class="inactive"{% endif %}>
+                        <td>{{ spot.id }}</td>
+                        <td>
+                            <a href="{{ url_for('admin.edit_spot', spot_id=spot.id) }}" class="spot-title">{{ spot.title }}</a>
+                        </td>
+                        <td>{{ spot.latitude }}</td>
+                        <td>{{ spot.longtitude }}</td>
+                        <td>{{ spot.timezone }}</td>
+                        <td class="nowrap">{{ spot.last_request | dt }}</td>
+                        <td>
+                            {% if spot.is_active %}
+                                <span class="badge on">Активен</span>
+                            {% else %}
+                                <span class="badge off">Отключен</span>
+                            {% endif %}
+                        </td>
+                        <td class="actions">
+                            <a href="{{ url_for('admin.edit_spot', spot_id=spot.id) }}" class="btn">Редактировать</a>
+                            <form method="post" action="{{ url_for('admin.toggle_spot', spot_id=spot.id) }}">
+                                <button type="submit" class="btn secondary">
+                                    {% if spot.is_active %}Отключить{% else %}Включить{% endif %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <div class="empty">Спотов пока нет</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

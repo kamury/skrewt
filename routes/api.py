@@ -116,7 +116,13 @@ def read_file():
 def get_actual_sounding_data(spot_id):
     #data = models.get_sounding_data(spot_id)
     #return jsonify(data)
-    models.set_spot_as_active(spot_id)
+    spot = models.get_spot_by_id(spot_id)
+
+    #по отключенному споту не отдаем данные и не запускаем фоновую загрузку
+    if not spot or not spot['is_active']:
+        return jsonify({}), 404
+
+    models.touch_spot_request_time(spot_id)
     data_by_datetime = {}
     set = []
     dates = []
@@ -152,7 +158,10 @@ def get_actual_sounding_data(spot_id):
     data_by_datetime[current_datetime.strftime('%Y-%m-%d %H:%M')] = set
     dates.append(current_datetime.strftime('%Y-%m-%d %H:%M'))
 
-    return jsonify({'dates':dates, 'data': data_by_datetime})
+    #высота точки для вывода под заголовком
+    elevation = get_elevation(spot['latitude'], spot['longtitude'])
+
+    return jsonify({'dates':dates, 'data': data_by_datetime, 'elevation': elevation})
 
 def load_in_background(spot_id, app):
     with app.app_context():
@@ -173,8 +182,15 @@ def load_by_cron(odd):
     
     return jsonify(spots)
 
+#кэш высот по координатам, чтобы не ходить в API на каждый запрос
+elevation_cache = {}
+
 def get_elevation(point_lat, point_lon):
     #высота точки по координатам через Open-Meteo Elevation API (Copernicus DEM 90m)
+    key = (point_lat, point_lon)
+    if key in elevation_cache:
+        return elevation_cache[key]
+
     try:
         response = requests.get(
             'https://api.open-meteo.com/v1/elevation',
@@ -182,7 +198,10 @@ def get_elevation(point_lat, point_lon):
             timeout=10
         )
         response.raise_for_status()
-        return float(response.json()['elevation'][0])
+        elevation = float(response.json()['elevation'][0])
+        #кэшируем только успешный ответ, при ошибке попробуем снова
+        elevation_cache[key] = elevation
+        return elevation
     except Exception as e:
         with open(LOG_FILE, 'a') as f:
             f.write(f"elevation api error {str(e)}\n")
@@ -191,7 +210,7 @@ def get_elevation(point_lat, point_lon):
 def load_by_spot(spot_id: int):
     spot = models.get_spot_by_id(spot_id)
 
-    if spot:
+    if spot and spot['is_active']:
         load_spot_forecast(spot)
     
 
@@ -239,7 +258,7 @@ def load_spot_forecast(spot):
         models.save_sounding_archive(spot['id'], noaa_datetime, data)
 
     #если к споту не было запросов больше 2х недель, прогноз не собираем
-    if not models.is_active_spot(spot['id']):
+    if not models.is_spot_requested_recently(spot['id']):
         return
 
     models.save_forecast(data, spot['id'], utc_now.date(), noaa_hour, f'{utc_now.date()} {hour_timezone:02d}:00:00')

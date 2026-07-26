@@ -204,6 +204,12 @@ const drawGraphics = (full_data, svg, dict, tempScale, heightScale, stratificati
 
     d3.select("#request_time").text(data[dates[0]][0]['request_time']);
 
+    //высота точки приходит вместе с прогнозом, показываем блок только когда она есть
+    if (full_data['elevation'] != null) {
+        d3.select("#elevation").text(Math.round(full_data['elevation']));
+        document.getElementById('elevation_block').style.display = '';
+    }
+
     console.log(123, formattedDate)
 
     // Группируем даты по суткам (ключ YYYY-MM-DD), чтобы отдельно выбирать день,
