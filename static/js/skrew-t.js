@@ -63,9 +63,14 @@ loadData(url).then(function(data) {
         "surface_dew": surface_dew
     };
 
+    //Подписи осей, высот и ветра рисуются за пределами области построения:
+    //сама область 800x600, плюс margin, плюс колонка высот и ветра справа.
+    //Поэтому viewBox шире графика — иначе края обрезаются, особенно на телефоне.
+    const viewBox = { x: -25, y: -10, width: 955, height: 690 };
+
     const svg = d3.select("#skewt-container")
         .append("svg")
-        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("viewBox", `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`)
         .attr("preserveAspectRatio", "xMidYMid meet")
         .style("width", "100%")
         .style("height", "100%")

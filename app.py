@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Response, abort
+from flask import Flask, render_template, Response, abort, jsonify
 import pygrib
 import math
 import numpy as np
@@ -61,6 +61,29 @@ def robots():
   #api и админку не индексируем, указываем путь к карте сайта
   text = f'User-agent: *\nDisallow: /api/\nDisallow: /admin/\nSitemap: {BASE_URL}/sitemap.xml\n'
   return Response(text, mimetype='text/plain')
+
+# Связь сайта с android-приложением (Trusted Web Activity).
+# Отпечаток берется из вывода `bubblewrap build` (или `keytool -list -v -keystore ...`)
+# и вставляется сюда после первой сборки apk. Пока он пустой, файл не отдается,
+# и приложение показывает сверху адресную строку.
+ANDROID_PACKAGE_NAME = 'ru.metpara.twa'
+ANDROID_CERT_FINGERPRINT = ''
+
+@app.route('/.well-known/assetlinks.json')
+def assetlinks():
+  if not ANDROID_CERT_FINGERPRINT:
+    abort(404)
+
+  data = [{
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": ANDROID_PACKAGE_NAME,
+      "sha256_cert_fingerprints": [ANDROID_CERT_FINGERPRINT]
+    }
+  }]
+
+  return jsonify(data)
 
 @app.cli.command("collect_odd_data")
 def collect_odd_data_command():

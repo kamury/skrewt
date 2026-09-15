@@ -6,6 +6,11 @@
     <title>Аэрологическая диаграмма. {{ spot.title }}.</title>
     <meta name="description" content="Аэрологическая диаграмма для парапланерных спотов по данным с сайта NOAA в косоугольной проекции." />
     
+    <!-- Установка на телефон: манифест приложения и иконки -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#1f4e6e">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+
     <!-- Внешние скрипты и стили -->
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <script src="/static/js/d3.v7.min.js"></script>
@@ -65,6 +70,11 @@
             font-size: 0.85rem;
             color: #5b7f95;
             font-weight: 500;
+            margin-bottom: 0;
+        }
+
+        .sub + .sub {
+            margin-top: 3px;
         }
 
         /* Кнопка спота */
@@ -141,12 +151,74 @@
             order: 1;
         }
 
-        .spot-btn-wrapper {
+        /* Блок доната прижимаем вправо: auto-отступ съедает свободное место,
+           и он встает рядом с кнопкой выбора спота. margin-right — зазор
+           между ними, у самой шапки gap не задан. */
+        .donate-panel {
             order: 2;
+            margin-left: auto;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        /* Кнопки живут в своей строке-контейнере с nowrap, поэтому переносятся
+           только вдвоем: поодиночке они не разъезжаются по разным строкам. */
+        .donate-buttons {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 8px;
+        }
+
+        .donate-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #5b7f95;
+        }
+
+        .donate-btn {
+            padding: 8px 16px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: 1px solid transparent;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .donate-btn:hover {
+            transform: scale(0.98);
+        }
+
+        .donate-tbank {
+            background: #ffdd2d;
+            border-color: #f0cd1c;
+            color: #1a2c3e;
+        }
+
+        .donate-tbank:hover {
+            background: #f5d31f;
+        }
+
+        .donate-sber {
+            background: #21a038;
+            border-color: #1c8c30;
+            color: #ffffff;
+        }
+
+        .donate-sber:hover {
+            background: #1c8c30;
+        }
+
+        .spot-btn-wrapper {
+            order: 3;
         }
 
         .heights-panel {
-            order: 3;
+            order: 4;
             flex-basis: 100%;
             display: flex;
             flex-wrap: wrap;
@@ -293,7 +365,7 @@
             }
         }
 
-        /* ========== ОСНОВНОЙ БЛОК: ГРАФИК + ВЕТЕР ========== */
+        /* ========== ОСНОВНОЙ БЛОК: ГРАФИК ========== */
         .main-row {
             display: flex;
             flex-direction: row;
@@ -310,20 +382,11 @@
             width: 100%;
         }
 
-        /* Контейнер ветра — фиксированная ширина, прижат справа */
-        .wind-wrapper {
-            flex: 0 0 auto;
-            width: 120px;
-        }
-
         /* Адаптив для мобильных */
         @media (max-width: 768px) {
             .main-row {
                 gap: 16px;
                 padding: 16px 20px;
-            }
-            .wind-wrapper {
-                width: 90px;
             }
         }
 
@@ -336,11 +399,6 @@
             border-radius: 8px;
         }
 
-        /* Стили для блока ветра */
-        .wind-wrapper {
-            font-family: monospace;
-            font-size: 12px;
-        }
 
         /* ========== СЛАЙДЕР ========== */
         /* Стили слайдера — минимальные, чтобы он правильно позиционировался */
@@ -422,8 +480,50 @@
                 padding: 8px 14px;
                 font-size: 0.8rem;
             }
-            .wind-wrapper {
-                width: 80px;
+            /* Донат — отдельной строкой внизу шапки, рядом с кнопкой спота
+               он на такой ширине уже не помещается */
+            .donate-panel {
+                order: 5;
+                flex-basis: 100%;
+                margin-left: 0;
+                margin-right: 0;
+                gap: 6px;
+                padding-top: 8px;
+            }
+            .donate-buttons {
+                gap: 6px;
+            }
+            .donate-label {
+                font-size: 0.78rem;
+            }
+            .donate-btn {
+                padding: 6px 14px;
+                font-size: 0.78rem;
+            }
+        }
+
+        /* ========== ТЕЛЕФОН: ГРАФИК ВО ВСЮ ШИРИНУ ==========
+           Блок идет последним намеренно: правила выше, в @media (max-width: 992px),
+           тоже совпадают на узком экране, и при равной специфичности побеждает
+           тот, кто объявлен позже. */
+        @media (max-width: 600px) {
+            body {
+                padding: 8px;
+            }
+            .main-row {
+                padding: 10px 6px;
+            }
+            /* 24px по бокам — ровно столько нужно крайним меткам времени:
+               они спозиционированы по центру относительно концов дорожки
+               и вылезают на половину своей ширины. */
+            .slider-section {
+                padding: 4px 24px 16px 24px;
+            }
+            /* Подписи внутри графика заданы в координатах viewBox.
+               На телефоне он ужимается больше чем вдвое, и штатный кегль
+               осей становится нечитаемым — увеличиваем. */
+            .chart-wrapper svg text {
+                font-size: 16px;
             }
         }
 
@@ -435,6 +535,21 @@
                 width: min(260px, calc(100vw - 32px));
                 max-width: calc(100vw - 32px);
             }
+        }
+
+        /* Подпись под карточкой */
+        .support {
+            max-width: 1400px;
+            margin: 16px auto 8px auto;
+            padding: 0 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #5b7f95;
+        }
+
+        .support a {
+            color: #1f6e8c;
+            font-weight: 600;
         }
 
         /* Дополнительные стили для контента */
@@ -501,6 +616,17 @@
                 <a href="/{{ spot.id }}/?scale=12000" class="height-btn {% if current_scale == '12000' %}active{% endif %}" data-height="12000">12 км</a>
             </div>
 
+            <!-- Поддержать проект -->
+            <div class="donate-panel">
+                <span class="donate-label">Поддержать проект</span>
+                <div class="donate-buttons">
+                    <a class="donate-btn donate-tbank" href="https://www.tbank.ru/cf/788TBlmR4ci"
+                       target="_blank" rel="noopener noreferrer">Т-Банк</a>
+                    <a class="donate-btn donate-sber" href="https://messenger.online.sberbank.ru/sl/RwNLK5oOwRwrwrs5F"
+                       target="_blank" rel="noopener noreferrer">Сбербанк</a>
+                </div>
+            </div>
+
             <div class="spot-btn-wrapper" id="spotWrapper">
                 <button class="spot-button" id="spotToggleBtn">
                     <span class="spot-icon">📍</span> Выбрать спот <span style="font-size:1rem;">⌵</span>
@@ -522,10 +648,6 @@
             <div class="chart-wrapper">
                 <!-- Здесь будет ваш график (skewt) -->
                 <div id="skewt-container"></div>
-            </div>
-            <div class="wind-wrapper">
-                <!-- Здесь будет блок с ветром -->
-                <div id="wind-container"></div>
             </div>
         </div>
 
@@ -549,10 +671,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div>Поддержать проект - подписывайтесь на канал в Telegram 
-        <a href="https://t.me/hello_mybody">@hello_mybody</a>
     </div>
 
     <!-- Скрипты -->

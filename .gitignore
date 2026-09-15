@@ -2,3 +2,18 @@ static/data/
 __pychache__/
 **/__pycache__/
 config.py
+# ========== Android / TWA (Bubblewrap) ==========
+# Кэши и результаты сборки — пересоздаются командой bubblewrap build
+.gradle/
+build/
+*.apk
+*.aab
+*.apk.idsig
+manifest-checksum.txt
+store_icon.png
+
+# Ключ подписи приложения — секрет, в репозиторий не кладем.
+# Копия на диске единственная: без нее не выпустить обновление,
+# которое встанет поверх уже установленного приложения.
+*.keystore
+*.jks
